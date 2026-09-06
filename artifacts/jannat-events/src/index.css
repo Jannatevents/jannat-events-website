@@ -477,7 +477,7 @@
   background: linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,.42) 58%, rgba(0,0,0,.25)) !important;
 }
 label:has([data-testid="input-media-file"])::after {
-  content: "For event and album images: recommended 1080 × 1440 px, required 3:4 portrait ratio, JPG/PNG/WebP, 10 MB maximum.";
+  content: "Images may use any ratio. Event and album covers are displayed in a 3:4 frame and can be repositioned in their edit form. JPG/PNG/WebP, 10 MB maximum.";
   display: block;
   margin-top: .25rem;
   color: #806b5f;

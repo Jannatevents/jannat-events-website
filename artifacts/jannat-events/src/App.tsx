@@ -139,7 +139,7 @@ function Home() {
 
 function EventCard({ event, index = 0 }: { event: any; index?: number }) {
   const parts = dateParts(event.date);
-  return <Link href={`/events/${event.slug}`} className="group block" data-testid={`card-event-${event.id}`}><div className="relative aspect-[4/5] overflow-hidden bg-[#d9c4ae]"><img src={img(event.poster, index)} alt={event.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /><div className="poster-gradient absolute inset-0" /><div className="absolute left-4 top-4 flex h-14 w-14 flex-col items-center justify-center bg-[#f3e9dc] text-[#4b231b]"><span className="mono-font text-[9px] font-bold tracking-wider">{parts.month}</span><span className="text-2xl font-bold leading-none">{parts.day}</span></div><div className="absolute bottom-5 left-5 right-5"><p className="mono-font text-[9px] uppercase tracking-[.19em] text-[#e5ae55]">{event.city} · {event.startTime}</p><h3 className="mt-2 text-2xl font-bold leading-tight text-[#f7eddf]">{event.title}</h3><p className="mt-1 text-xs text-[#e6d5c8]">{event.venue}</p></div></div></Link>;
+  return <Link href={`/events/${event.slug}`} className="group block" data-testid={`card-event-${event.id}`}><div className="relative aspect-[4/5] overflow-hidden bg-[#d9c4ae]"><img src={img(event.poster, index)} alt={event.title} style={{ objectPosition: cropPosition(event.poster) }} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" /><div className="poster-gradient absolute inset-0" /><div className="absolute left-4 top-4 flex h-14 w-14 flex-col items-center justify-center bg-[#f3e9dc] text-[#4b231b]"><span className="mono-font text-[9px] font-bold tracking-wider">{parts.month}</span><span className="text-2xl font-bold leading-none">{parts.day}</span></div><div className="absolute bottom-5 left-5 right-5"><p className="mono-font text-[9px] uppercase tracking-[.19em] text-[#e5ae55]">{event.city} · {event.startTime}</p><h3 className="mt-2 text-2xl font-bold leading-tight text-[#f7eddf]">{event.title}</h3><p className="mt-1 text-xs text-[#e6d5c8]">{event.venue}</p></div></div></Link>;
 }
 
 function Events() {
@@ -269,14 +269,24 @@ function uploadFileWithProgress(uploadURL: string, file: File) {
 async function validatePortraitImage(file: File) {
   if (!IMAGE_TYPES.includes(file.type)) throw new Error('Choose a JPG, PNG, or WebP image.');
   if (file.size > MAX_IMAGE_BYTES) throw new Error('Image must be 10 MB or smaller.');
-  const bitmap = await createImageBitmap(file);
-  const ratio = bitmap.width / bitmap.height;
-  bitmap.close();
-  if (Math.abs(ratio - 3 / 4) > 0.03) throw new Error('Image must use a 3:4 portrait ratio, such as 1080 × 1440 px.');
+}
+function cropValues(value: string) { const match = /[?&]crop=(\d+),(\d+)/.exec(value || ''); return { x: Number(match?.[1] ?? 50), y: Number(match?.[2] ?? 50) }; }
+function cropPosition(value?: string | null) { const { x, y } = cropValues(value || ''); return `${x}% ${y}%`; }
+function withCrop(value: string, x: number, y: number) { const base = (value || '').replace(/[?&]crop=\d+,\d+/, '').replace(/[?&]$/, ''); return `${base}${base.includes('?') ? '&' : '?'}crop=${x},${y}`; }
+function CropPositioner() {
+  useEffect(() => {
+    const apply = () => document.querySelectorAll<HTMLImageElement>('img[src*="crop="]').forEach((image) => { image.style.objectPosition = cropPosition(image.getAttribute('src')); });
+    const observer = new MutationObserver(apply);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['src'] });
+    apply();
+    return () => observer.disconnect();
+  }, []);
+  return null;
 }
 function AdminImageUpload({ label, value, set, id }: { label: string; value: string; set: (v: string) => void; id: string }) {
   const upload = useRequestUploadUrl();
   const [message, setMessage] = useState('');
+  const crop = cropValues(value);
   const choose = async (file: File) => {
     setMessage('Checking image…');
     try {
@@ -284,13 +294,13 @@ function AdminImageUpload({ label, value, set, id }: { label: string; value: str
       setMessage('Uploading…');
       const result = await upload.mutateAsync({ data: { name: file.name, size: file.size, contentType: file.type } });
       await uploadFileWithProgress(result.uploadURL, file);
-      set(`/api/storage${result.objectPath}`);
+      set(withCrop(`/api/storage${result.objectPath}`, 50, 50));
       setMessage('Upload complete.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Upload failed. Please try again.');
     }
   };
-  return <div className="grid gap-2 sm:col-span-2"><span className="text-xs font-bold">{label}</span><div className="overflow-hidden border border-[#d8c8b8] bg-[#f3ead7]"><div className="mx-auto aspect-[3/4] max-h-[560px] bg-[#d9c4ae]">{value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center px-6 text-center text-xs text-[#806b5f]">1080 × 1440 px portrait image preview</div>}</div><div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-bold">Recommended: 1080 × 1440 px</p><p className="mt-1 text-[11px] text-[#806b5f]">Required 3:4 portrait ratio · JPG, PNG, or WebP · 10 MB maximum</p>{message && <p className="mt-2 text-[11px] text-[#674329]">{message}</p>}</div><label className="focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#070604] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#f7e8c2]"><UploadCloud size={14} /> {upload.isPending ? 'Uploading…' : value ? 'Replace image' : 'Upload image'}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending} onChange={(e) => e.target.files?.[0] && void choose(e.target.files[0])} data-testid={id} /></label></div></div></div>;
+  return <div className="grid gap-2 sm:col-span-2"><span className="text-xs font-bold">{label}</span><div className="overflow-hidden border border-[#d8c8b8] bg-[#f3ead7]"><div className="mx-auto aspect-[3/4] max-h-[560px] bg-[#d9c4ae]">{value ? <img src={value} alt="" style={{ objectPosition: cropPosition(value) }} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center px-6 text-center text-xs text-[#806b5f]">Upload any image ratio. It will be fitted into this 3:4 frame.</div>}</div>{value && <div className="grid gap-4 border-t border-[#d8c8b8] p-4 sm:grid-cols-2"><label className="grid gap-2 text-[11px] font-bold"><span>Move left or right</span><input type="range" min="0" max="100" value={crop.x} onChange={(e) => set(withCrop(value, Number(e.target.value), crop.y))} data-testid={`${id}-crop-x`} /></label><label className="grid gap-2 text-[11px] font-bold"><span>Move up or down</span><input type="range" min="0" max="100" value={crop.y} onChange={(e) => set(withCrop(value, crop.x, Number(e.target.value)))} data-testid={`${id}-crop-y`} /></label></div>}<div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-bold">Any image ratio accepted</p><p className="mt-1 text-[11px] text-[#806b5f]">JPG, PNG, or WebP · 10 MB maximum · Adjust the crop above</p>{message && <p className="mt-2 text-[11px] text-[#674329]">{message}</p>}</div><label className="focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#070604] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#f7e8c2]"><UploadCloud size={14} /> {upload.isPending ? 'Uploading…' : value ? 'Replace image' : 'Upload image'}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending} onChange={(e) => e.target.files?.[0] && void choose(e.target.files[0])} data-testid={id} /></label></div></div></div>;
 }
 
 function AdminAlbums() {
@@ -339,6 +349,6 @@ function Router() {
     <Route path="/" component={Home} /><Route path="/events" component={Events} /><Route path="/events/:slug" component={EventDetail} /><Route path="/albums" component={Albums} /><Route path="/albums/:slug" component={AlbumDetail} /><Route path="/about" component={About} /><Route path="/contact" component={Contact} /><Route path="/admin/login"><Redirect to="/sign-in" /></Route><Route path="/sign-in/*?" component={AuthPage} /><Route path="/sign-up/*?"><Redirect to="/sign-in" /></Route><Route path="/admin" component={() => <ProtectedAdmin><AdminDashboard /></ProtectedAdmin>} /><Route path="/admin/events" component={() => <ProtectedAdmin><AdminEvents /></ProtectedAdmin>} /><Route path="/admin/events/new" component={() => <ProtectedAdmin><EventForm /></ProtectedAdmin>} /><Route path="/admin/events/:id/edit" component={() => { const { id } = useParams<{ id: string }>(); return <ProtectedAdmin><EventForm editId={Number(id)} /></ProtectedAdmin>; }} /><Route path="/admin/albums" component={() => <ProtectedAdmin><AdminAlbums /></ProtectedAdmin>} /><Route path="/admin/albums/new" component={() => <ProtectedAdmin><AlbumForm /></ProtectedAdmin>} /><Route path="/admin/albums/:id/edit" component={() => { const { id } = useParams<{ id: string }>(); return <ProtectedAdmin><AlbumForm editId={Number(id)} /></ProtectedAdmin>; }} /><Route path="/admin/media" component={() => <ProtectedAdmin><AdminMedia /></ProtectedAdmin>} /><Route path="/admin/homepage" component={() => <ProtectedAdmin><AdminHomepage /></ProtectedAdmin>} /><Route path="/admin/settings" component={() => <ProtectedAdmin><AdminSettings /></ProtectedAdmin>} /><Route path="/admin/messages" component={() => <ProtectedAdmin><AdminMessages /></ProtectedAdmin>} /><Route component={NotFound} />
   </Switch></ErrorBoundary>;
 }
-function ClerkApp() { const [, setLocation] = useLocation(); return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={{ theme: dark, cssLayerName: 'clerk', options: { logoPlacement: 'inside', logoImageUrl: `${window.location.origin}${basePath}/jannat-logo.png`, logoLinkUrl: basePath || '/' }, variables: { colorPrimary: '#d7a84f', colorBackground: '#070604', colorForeground: '#f7e8c2', colorMutedForeground: '#c7ad7a', colorInput: '#15110b', colorInputForeground: '#f7e8c2', colorNeutral: '#6f5426', fontFamily: 'Manrope, sans-serif', borderRadius: '2px' }, elements: { footerAction: { display: 'none' }, socialButtonsBlockButton: { display: 'none' }, dividerRow: { display: 'none' } } }} signInUrl={`${basePath}/sign-in`} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><QueryClientProvider client={queryClient}><ClerkCacheInvalidator /><Seo /><UploadProgressToast /><Router /></QueryClientProvider></ClerkProvider>; }
+function ClerkApp() { const [, setLocation] = useLocation(); return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={{ theme: dark, cssLayerName: 'clerk', options: { logoPlacement: 'inside', logoImageUrl: `${window.location.origin}${basePath}/jannat-logo.png`, logoLinkUrl: basePath || '/' }, variables: { colorPrimary: '#d7a84f', colorBackground: '#070604', colorForeground: '#f7e8c2', colorMutedForeground: '#c7ad7a', colorInput: '#15110b', colorInputForeground: '#f7e8c2', colorNeutral: '#6f5426', fontFamily: 'Manrope, sans-serif', borderRadius: '2px' }, elements: { footerAction: { display: 'none' }, socialButtonsBlockButton: { display: 'none' }, dividerRow: { display: 'none' } } }} signInUrl={`${basePath}/sign-in`} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><QueryClientProvider client={queryClient}><ClerkCacheInvalidator /><Seo /><UploadProgressToast /><CropPositioner /><Router /></QueryClientProvider></ClerkProvider>; }
 function App() { return <WouterRouter base={basePath}><ClerkApp /></WouterRouter>; }
 export default App;
