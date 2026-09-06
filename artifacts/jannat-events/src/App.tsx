@@ -60,7 +60,7 @@ function dateParts(date?: string | null) {
 }
 
 function Logo({ light = false }: { light?: boolean }) {
-  return <Link href="/" className={`focus-ring inline-flex h-16 w-36 shrink-0 items-center justify-center overflow-hidden bg-black px-2 py-1 ${light ? '' : 'rounded-sm'}`} data-testid="link-logo" aria-label="Jannat Events home">
+  return <Link href="/" className={`focus-ring inline-flex h-16 w-36 shrink-0 items-center justify-center overflow-visible px-2 py-1 ${light ? '' : 'rounded-sm'}`} data-testid="link-logo" aria-label="Jannat Events home">
     <img src={`${basePath}/jannat-logo.png`} alt="Jannat" className="h-full w-full object-contain object-center" />
   </Link>;
 }
