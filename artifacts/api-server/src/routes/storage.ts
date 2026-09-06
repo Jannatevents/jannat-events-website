@@ -6,7 +6,6 @@ import {
 import { Router, type IRouter, type Request, type Response } from 'express';
 import { getAuth } from '@clerk/express';
 
-import { ObjectPermission } from '../lib/objectAcl';
 import {
   ObjectNotFoundError,
   ObjectStorageService,
@@ -61,11 +60,6 @@ router.post(
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       const objectPath =
         objectStorageService.normalizeObjectEntityPath(uploadURL);
-      await objectStorageService.trySetObjectEntityAclPolicy(uploadURL, {
-        owner: userId,
-        visibility: 'public',
-        aclRules: [],
-      });
 
       res.json(
         RequestUploadUrlResponse.parse({
