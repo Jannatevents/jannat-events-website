@@ -5,7 +5,9 @@
  * Jannat Events public website and content management API
  * OpenAPI spec version: 0.1.0
  */
+import type { Error } from './error';
 
-export interface HealthStatus {
-  status: string;
-}
+/**
+ * Invalid input
+ */
+export type BadRequestResponse = Error;

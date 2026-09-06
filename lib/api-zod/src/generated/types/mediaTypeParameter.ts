@@ -5,7 +5,6 @@
  * Jannat Events public website and content management API
  * OpenAPI spec version: 0.1.0
  */
+import type { MediaType } from './mediaType';
 
-export interface HealthStatus {
-  status: string;
-}
+export type MediaTypeParameter = MediaType;

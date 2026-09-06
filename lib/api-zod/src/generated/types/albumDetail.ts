@@ -5,7 +5,9 @@
  * Jannat Events public website and content management API
  * OpenAPI spec version: 0.1.0
  */
+import type { Album } from './album';
+import type { Media } from './media';
 
-export interface HealthStatus {
-  status: string;
-}
+export type AlbumDetail = Album & {
+  media?: Media[];
+};

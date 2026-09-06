@@ -3,20 +3,21 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Jannat Events public website and content management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: public
+  - name: admin
+  - name: storage
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +25,762 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /public/home:
+    get:
+      operationId: getHome
+      tags: [public]
+      summary: Get published homepage content
+      responses:
+        "200":
+          description: Homepage data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomePage"
+  /public/events:
+    get:
+      operationId: listPublicEvents
+      tags: [public]
+      summary: List published events
+      parameters:
+        - $ref: "#/components/parameters/City"
+        - $ref: "#/components/parameters/EventStatus"
+      responses:
+        "200":
+          description: Published event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+  /public/events/{slug}:
+    get:
+      operationId: getPublicEvent
+      tags: [public]
+      summary: Get a published event by slug
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /public/albums:
+    get:
+      operationId: listPublicAlbums
+      tags: [public]
+      summary: List published albums
+      responses:
+        "200":
+          description: Published album list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Album"
+  /public/albums/{slug}:
+    get:
+      operationId: getPublicAlbum
+      tags: [public]
+      summary: Get a published album by slug
+      parameters:
+        - $ref: "#/components/parameters/Slug"
+      responses:
+        "200":
+          description: Album
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlbumDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /public/site:
+    get:
+      operationId: getPublicSite
+      tags: [public]
+      summary: Get public site and social settings
+      responses:
+        "200":
+          description: Public site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+  /contact:
+    post:
+      operationId: submitContact
+      tags: [public]
+      summary: Submit a contact inquiry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Contact message received
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactMessage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /admin/overview:
+    get:
+      operationId: getAdminOverview
+      tags: [admin]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminOverview"
+  /admin/events:
+    get:
+      operationId: listAdminEvents
+      tags: [admin]
+      summary: List all events
+      parameters:
+        - $ref: "#/components/parameters/EventStatus"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Event list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [admin]
+      summary: Create an event
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /admin/events/{id}:
+    get:
+      operationId: getAdminEvent
+      tags: [admin]
+      summary: Get an event for editing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateEvent
+      tags: [admin]
+      summary: Update an event
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteEvent
+      tags: [admin]
+      summary: Delete an event
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/events/{id}/duplicate:
+    post:
+      operationId: duplicateEvent
+      tags: [admin]
+      summary: Duplicate an event
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "201":
+          description: Duplicated event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+  /admin/albums:
+    get:
+      operationId: listAdminAlbums
+      tags: [admin]
+      summary: List all albums
+      parameters:
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Album list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Album"
+    post:
+      operationId: createAlbum
+      tags: [admin]
+      summary: Create an album
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlbumInput"
+      responses:
+        "201":
+          description: Created album
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Album"
+  /admin/albums/{id}:
+    get:
+      operationId: getAdminAlbum
+      tags: [admin]
+      summary: Get an album for editing
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Album
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlbumDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      operationId: updateAlbum
+      tags: [admin]
+      summary: Update an album
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlbumUpdate"
+      responses:
+        "200":
+          description: Updated album
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Album"
+    delete:
+      operationId: deleteAlbum
+      tags: [admin]
+      summary: Delete an album
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /admin/media:
+    get:
+      operationId: listAdminMedia
+      tags: [admin]
+      summary: List media library items
+      parameters:
+        - $ref: "#/components/parameters/MediaType"
+        - $ref: "#/components/parameters/Search"
+      responses:
+        "200":
+          description: Media list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Media"
+    post:
+      operationId: createMedia
+      tags: [admin]
+      summary: Add a media item to the library
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaInput"
+      responses:
+        "201":
+          description: Created media item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Media"
+  /admin/media/{id}:
+    patch:
+      operationId: updateMedia
+      tags: [admin]
+      summary: Update media metadata
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaUpdate"
+      responses:
+        "200":
+          description: Updated media
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Media"
+    delete:
+      operationId: deleteMedia
+      tags: [admin]
+      summary: Delete media item
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+  /admin/homepage:
+    get:
+      operationId: getHomepageSettings
+      tags: [admin]
+      summary: Get homepage settings
+      responses:
+        "200":
+          description: Homepage settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomePage"
+    patch:
+      operationId: updateHomepageSettings
+      tags: [admin]
+      summary: Update homepage settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HomePageUpdate"
+      responses:
+        "200":
+          description: Updated homepage settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomePage"
+  /admin/settings:
+    get:
+      operationId: getSiteSettings
+      tags: [admin]
+      summary: Get site settings
+      responses:
+        "200":
+          description: Site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+    patch:
+      operationId: updateSiteSettings
+      tags: [admin]
+      summary: Update site settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteSettingsUpdate"
+      responses:
+        "200":
+          description: Updated site settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteSettings"
+  /admin/messages:
+    get:
+      operationId: listContactMessages
+      tags: [admin]
+      summary: List contact messages
+      responses:
+        "200":
+          description: Contact message list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContactMessage"
+  /storage/uploads/request-url:
+    post:
+      operationId: requestUploadUrl
+      tags: [storage]
+      summary: Request a presigned upload URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadRequest"
+      responses:
+        "200":
+          description: Presigned upload data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    Slug:
+      name: slug
+      in: path
+      required: true
+      schema:
+        type: string
+    City:
+      name: city
+      in: query
+      required: false
+      schema:
+        type: string
+    Search:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+    EventStatus:
+      name: status
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/EventStatus"
+    MediaType:
+      name: type
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/MediaType"
+  responses:
+    BadRequest:
+      description: Invalid input
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    EventStatus:
+      type: string
+      enum: [UPCOMING, PAST, DRAFT]
+    MediaType:
+      type: string
+      enum: [IMAGE, VIDEO]
+    Media:
+      type: object
+      properties:
+        id: { type: integer }
+        type: { $ref: "#/components/schemas/MediaType" }
+        url: { type: string }
+        thumbnail: { type: ["string", "null"] }
+        altText: { type: string }
+        albumId: { type: ["integer", "null"] }
+        eventId: { type: ["integer", "null"] }
+        sortOrder: { type: integer }
+        createdAt: { type: string, format: date-time }
+      required: [id, type, url, altText, sortOrder, createdAt]
+    MediaInput:
+      type: object
+      required: [type, url, altText]
+      properties:
+        type: { $ref: "#/components/schemas/MediaType" }
+        url: { type: string, minLength: 1 }
+        thumbnail: { type: ["string", "null"] }
+        altText: { type: string }
+        albumId: { type: ["integer", "null"] }
+        eventId: { type: ["integer", "null"] }
+        sortOrder: { type: integer, default: 0 }
+    MediaUpdate:
+      type: object
+      properties:
+        altText: { type: string }
+        thumbnail: { type: ["string", "null"] }
+        albumId: { type: ["integer", "null"] }
+        eventId: { type: ["integer", "null"] }
+        sortOrder: { type: integer }
+    Event:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        date: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: ["string", "null"] }
+        venue: { type: string }
+        address: { type: string }
+        city: { type: string }
+        province: { type: string }
+        description: { type: string }
+        poster: { type: ["string", "null"] }
+        ticketUrl: { type: ["string", "null"], format: uri }
+        instagramUrl: { type: ["string", "null"], format: uri }
+        status: { $ref: "#/components/schemas/EventStatus" }
+        featured: { type: boolean }
+        ageRestriction: { type: ["string", "null"] }
+        dressCode: { type: ["string", "null"] }
+        organizer: { type: ["string", "null"] }
+        seoTitle: { type: ["string", "null"] }
+        seoDescription: { type: ["string", "null"] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, title, slug, date, startTime, venue, address, city, province, description, status, featured, createdAt, updatedAt]
+    EventInput:
+      type: object
+      required: [title, date, startTime, venue, address, city, province, description]
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: ["string", "null"] }
+        date: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: ["string", "null"] }
+        venue: { type: string }
+        address: { type: string }
+        city: { type: string }
+        province: { type: string }
+        description: { type: string }
+        poster: { type: ["string", "null"] }
+        ticketUrl: { type: ["string", "null"], format: uri }
+        instagramUrl: { type: ["string", "null"], format: uri }
+        status: { $ref: "#/components/schemas/EventStatus", default: DRAFT }
+        featured: { type: boolean, default: false }
+        ageRestriction: { type: ["string", "null"] }
+        dressCode: { type: ["string", "null"] }
+        organizer: { type: ["string", "null"] }
+        seoTitle: { type: ["string", "null"] }
+        seoDescription: { type: ["string", "null"] }
+    EventUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: string }
+        date: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: ["string", "null"] }
+        venue: { type: string }
+        address: { type: string }
+        city: { type: string }
+        province: { type: string }
+        description: { type: string }
+        poster: { type: ["string", "null"] }
+        ticketUrl: { type: ["string", "null"], format: uri }
+        instagramUrl: { type: ["string", "null"], format: uri }
+        status: { $ref: "#/components/schemas/EventStatus" }
+        featured: { type: boolean }
+        ageRestriction: { type: ["string", "null"] }
+        dressCode: { type: ["string", "null"] }
+        organizer: { type: ["string", "null"] }
+        seoTitle: { type: ["string", "null"] }
+        seoDescription: { type: ["string", "null"] }
+    EventDetail:
+      allOf:
+        - $ref: "#/components/schemas/Event"
+        - type: object
+          properties:
+            gallery: { type: array, items: { $ref: "#/components/schemas/Media" } }
+            album: { anyOf: [{ $ref: "#/components/schemas/Album" }, { type: "null" }] }
+    Album:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        slug: { type: string }
+        description: { type: string }
+        coverImage: { type: ["string", "null"] }
+        eventId: { type: ["integer", "null"] }
+        eventTitle: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        date: { type: ["string", "null"], format: date }
+        published: { type: boolean }
+        createdAt: { type: string, format: date-time }
+      required: [id, title, slug, description, published, createdAt]
+    AlbumInput:
+      type: object
+      required: [title, description]
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: ["string", "null"] }
+        description: { type: string }
+        coverImage: { type: ["string", "null"] }
+        eventId: { type: ["integer", "null"] }
+        published: { type: boolean, default: false }
+    AlbumUpdate:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        slug: { type: string }
+        description: { type: string }
+        coverImage: { type: ["string", "null"] }
+        eventId: { type: ["integer", "null"] }
+        published: { type: boolean }
+    AlbumDetail:
+      allOf:
+        - $ref: "#/components/schemas/Album"
+        - type: object
+          properties:
+            media: { type: array, items: { $ref: "#/components/schemas/Media" } }
+    ContactInput:
+      type: object
+      required: [name, email, subject, inquiryType, message]
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        phone: { type: ["string", "null"] }
+        subject: { type: string, minLength: 1 }
+        inquiryType: { type: string, enum: [General, Event, Sponsorship, Partnership, "Artist Booking", Media, Other] }
+        message: { type: string, minLength: 1 }
+    ContactMessage:
+      allOf:
+        - $ref: "#/components/schemas/ContactInput"
+        - type: object
+          properties:
+            id: { type: integer }
+            status: { type: string, enum: [NEW, READ, ARCHIVED] }
+            createdAt: { type: string, format: date-time }
+          required: [id, status, createdAt]
+    HomePage:
+      type: object
+      properties:
+        heroImage: { type: ["string", "null"] }
+        heroVideo: { type: ["string", "null"] }
+        heroHeadline: { type: string }
+        heroSubtitle: { type: string }
+        ctaText: { type: string }
+        ctaUrl: { type: string }
+        featuredEventId: { type: ["integer", "null"] }
+        featuredEvent: { anyOf: [{ $ref: "#/components/schemas/Event" }, { type: "null" }] }
+        gallery: { type: array, items: { $ref: "#/components/schemas/Media" } }
+      required: [heroHeadline, heroSubtitle, ctaText, ctaUrl, gallery]
+    HomePageUpdate:
+      type: object
+      properties:
+        heroImage: { type: ["string", "null"] }
+        heroVideo: { type: ["string", "null"] }
+        heroHeadline: { type: string }
+        heroSubtitle: { type: string }
+        ctaText: { type: string }
+        ctaUrl: { type: string }
+        featuredEventId: { type: ["integer", "null"] }
+    SiteSettings:
+      type: object
+      properties:
+        instagramUrl: { type: string, format: uri }
+        facebookUrl: { type: ["string", "null"], format: uri }
+        tiktokUrl: { type: ["string", "null"], format: uri }
+        contactEmail: { type: ["string", "null"], format: email }
+        cities: { type: array, items: { type: string } }
+      required: [instagramUrl, cities]
+    SiteSettingsUpdate:
+      type: object
+      properties:
+        instagramUrl: { type: string, format: uri }
+        facebookUrl: { type: ["string", "null"], format: uri }
+        tiktokUrl: { type: ["string", "null"], format: uri }
+        contactEmail: { type: ["string", "null"], format: email }
+        cities: { type: array, items: { type: string } }
+    AdminOverview:
+      type: object
+      properties:
+        upcomingEvents: { type: integer }
+        pastEvents: { type: integer }
+        publishedAlbums: { type: integer }
+        totalMedia: { type: integer }
+        unreadMessages: { type: integer }
+        recentEvents: { type: array, items: { $ref: "#/components/schemas/Event" } }
+      required: [upcomingEvents, pastEvents, publishedAlbums, totalMedia, unreadMessages, recentEvents]
+    UploadRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name: { type: string, minLength: 1 }
+        size: { type: integer, minimum: 1, maximum: 524288000 }
+        contentType: { type: string, minLength: 1 }
+    UploadResponse:
+      type: object
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+      required: [uploadURL, objectPath]

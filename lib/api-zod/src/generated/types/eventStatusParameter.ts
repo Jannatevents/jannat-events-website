@@ -5,7 +5,6 @@
  * Jannat Events public website and content management API
  * OpenAPI spec version: 0.1.0
  */
+import type { EventStatus } from './eventStatus';
 
-export interface HealthStatus {
-  status: string;
-}
+export type EventStatusParameter = EventStatus;
