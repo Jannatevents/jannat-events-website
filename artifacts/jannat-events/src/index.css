@@ -464,6 +464,8 @@
 .poster-gradient { background: linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.34) 38%, rgba(0,0,0,.9) 100%); }
 .admin-shell { background: #f3ead7; }
 .focus-ring:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: 3px; }
+button:not(:disabled), [role="button"], a, label:has(input[type="file"]) { cursor: pointer; }
+button:active:not(:disabled) { transform: translateY(1px); }
 
 [data-testid^="card-event-"] > div,
 [data-testid^="card-album-"] > div,
