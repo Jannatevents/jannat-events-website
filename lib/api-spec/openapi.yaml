@@ -46,6 +46,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/City"
         - $ref: "#/components/parameters/EventStatus"
+        - $ref: "#/components/parameters/Country"
       responses:
         "200":
           description: Published event list
@@ -511,6 +512,12 @@ components:
       required: false
       schema:
         $ref: "#/components/schemas/EventStatus"
+    Country:
+      name: country
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/Country"
     MediaType:
       name: type
       in: query
@@ -546,6 +553,9 @@ components:
     EventStatus:
       type: string
       enum: [UPCOMING, PAST, DRAFT]
+    Country:
+      type: string
+      enum: [CA, US]
     MediaType:
       type: string
       enum: [IMAGE, VIDEO]
@@ -594,6 +604,7 @@ components:
         address: { type: string }
         city: { type: string }
         province: { type: string }
+        country: { $ref: "#/components/schemas/Country" }
         description: { type: string }
         poster: { type: ["string", "null"] }
         ticketUrl: { type: ["string", "null"], format: uri }
@@ -607,10 +618,10 @@ components:
         seoDescription: { type: ["string", "null"] }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
-      required: [id, title, slug, date, startTime, venue, address, city, province, description, status, featured, createdAt, updatedAt]
+      required: [id, title, slug, date, startTime, venue, address, city, province, country, description, status, featured, createdAt, updatedAt]
     EventInput:
       type: object
-      required: [title, date, startTime, venue, address, city, province, description]
+      required: [title, date, startTime, venue, address, city, province, country, description]
       properties:
         title: { type: string, minLength: 1 }
         slug: { type: ["string", "null"] }
@@ -621,6 +632,7 @@ components:
         address: { type: string }
         city: { type: string }
         province: { type: string }
+        country: { $ref: "#/components/schemas/Country" }
         description: { type: string }
         poster: { type: ["string", "null"] }
         ticketUrl: { type: ["string", "null"], format: uri }
@@ -644,6 +656,7 @@ components:
         address: { type: string }
         city: { type: string }
         province: { type: string }
+        country: { $ref: "#/components/schemas/Country" }
         description: { type: string }
         poster: { type: ["string", "null"] }
         ticketUrl: { type: ["string", "null"], format: uri }

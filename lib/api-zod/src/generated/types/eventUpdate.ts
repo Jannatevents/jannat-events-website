@@ -5,6 +5,7 @@
  * Jannat Events public website and content management API
  * OpenAPI spec version: 0.1.0
  */
+import type { Country } from './country';
 import type { EventStatus } from './eventStatus';
 
 export interface EventUpdate {
@@ -19,6 +20,7 @@ export interface EventUpdate {
   address?: string;
   city?: string;
   province?: string;
+  country?: Country;
   description?: string;
   /** @nullable */
   poster?: string | null;

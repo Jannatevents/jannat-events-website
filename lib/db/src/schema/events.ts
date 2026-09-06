@@ -12,6 +12,7 @@ export const eventsTable = pgTable("events", {
   address: text("address").notNull(),
   city: text("city").notNull(),
   province: text("province").notNull(),
+  country: text("country").notNull().default("CA"),
   description: text("description").notNull(),
   poster: text("poster"),
   ticketUrl: text("ticket_url"),

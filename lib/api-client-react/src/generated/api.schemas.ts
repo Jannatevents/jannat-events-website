@@ -22,6 +22,14 @@ export const EventStatus = {
   DRAFT: 'DRAFT',
 } as const;
 
+export type Country = typeof Country[keyof typeof Country];
+
+
+export const Country = {
+  CA: 'CA',
+  US: 'US',
+} as const;
+
 export type MediaType = typeof MediaType[keyof typeof MediaType];
 
 
@@ -82,6 +90,7 @@ export interface Event {
   address: string;
   city: string;
   province: string;
+  country: Country;
   description: string;
   /** @nullable */
   poster?: string | null;
@@ -118,6 +127,7 @@ export interface EventInput {
   address: string;
   city: string;
   province: string;
+  country: Country;
   description: string;
   /** @nullable */
   poster?: string | null;
@@ -151,6 +161,7 @@ export interface EventUpdate {
   address?: string;
   city?: string;
   province?: string;
+  country?: Country;
   description?: string;
   /** @nullable */
   poster?: string | null;
@@ -358,11 +369,14 @@ export type SearchParameter = string;
 
 export type EventStatusParameter = EventStatus;
 
+export type CountryParameter = Country;
+
 export type MediaTypeParameter = MediaType;
 
 export type ListPublicEventsParams = {
 city?: CityParameter;
 status?: EventStatusParameter;
+country?: CountryParameter;
 };
 
 export type ListAdminEventsParams = {

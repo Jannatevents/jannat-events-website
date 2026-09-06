@@ -74,6 +74,7 @@ router.get("/public/events", async (req, res): Promise<void> => {
   }
   const filters = [eq(eventsTable.status, parsed.data.status ?? "UPCOMING")];
   if (parsed.data.city) filters.push(eq(eventsTable.city, parsed.data.city));
+  if (parsed.data.country) filters.push(eq(eventsTable.country, parsed.data.country));
   const rows = await db.select().from(eventsTable).where(and(...filters)).orderBy(asc(eventsTable.date), asc(eventsTable.startTime));
   res.json(ListPublicEventsResponse.parse(rows.map(normalizeStatus)));
 });

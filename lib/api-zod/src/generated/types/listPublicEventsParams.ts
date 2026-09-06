@@ -6,10 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CityParameter } from './cityParameter';
+import type { Country } from './country';
+import type { CountryParameter } from './countryParameter';
 import type { EventStatus } from './eventStatus';
 import type { EventStatusParameter } from './eventStatusParameter';
 
 export type ListPublicEventsParams = {
 city?: CityParameter;
 status?: EventStatusParameter;
+country?: CountryParameter;
 };

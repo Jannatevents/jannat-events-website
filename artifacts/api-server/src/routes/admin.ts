@@ -200,6 +200,7 @@ router.post("/admin/events/:id/duplicate", async (req, res): Promise<void> => {
     address: source.address,
     city: source.city,
     province: source.province,
+    country: source.country,
     description: source.description,
     poster: source.poster,
     ticketUrl: source.ticketUrl,

@@ -17,6 +17,8 @@ export * from './contactInput';
 export * from './contactInputInquiryType';
 export * from './contactMessage';
 export * from './contactMessageStatus';
+export * from './country';
+export * from './countryParameter';
 export * from './error';
 export * from './event';
 export * from './eventDetail';
