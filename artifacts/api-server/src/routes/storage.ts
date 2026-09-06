@@ -46,6 +46,17 @@ router.post(
 
     try {
       const { name, size, contentType } = parsed.data;
+      if (contentType.startsWith('image/')) {
+        const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+        if (!allowedImageTypes.has(contentType)) {
+          res.status(415).json({ error: 'Images must be JPG, PNG, or WebP' });
+          return;
+        }
+        if (size > 10 * 1024 * 1024) {
+          res.status(413).json({ error: 'Images must be 10 MB or smaller' });
+          return;
+        }
+      }
 
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
       const objectPath =

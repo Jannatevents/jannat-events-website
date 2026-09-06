@@ -465,6 +465,17 @@
 .admin-shell { background: #f3ead7; }
 .focus-ring:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: 3px; }
 
+[data-testid^="card-event-"] > div { aspect-ratio: 16 / 9 !important; }
+label:has([data-testid="input-media-file"])::after {
+  content: "For event images: recommended 800 × 450 px, required 16:9 landscape ratio, JPG/PNG/WebP, 10 MB maximum.";
+  display: block;
+  margin-top: .25rem;
+  color: #806b5f;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 /* Jannat brand palette: black, antique gold, and warm champagne. */
 .bg-\[\#24120f\], .bg-\[\#351a16\], .bg-\[\#2b1916\] { background-color: #070604 !important; }
 .bg-\[\#f3e9dc\], .bg-\[\#f6f0e7\], .bg-\[\#f8f3eb\] { background-color: #f3ead7 !important; }
