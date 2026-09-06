@@ -22,5 +22,5 @@ export async function ensureSeeded() {
   const [album] = await db.insert(albumsTable).values({ title: "Summer After Dark", slug: "summer-after-dark-gallery", description: "A look back at one of Toronto's warmest nights.", coverImage: images[3], eventId: past.id, published: true }).returning();
   await db.insert(mediaTable).values(images.map((url, index) => ({ type: "IMAGE", url, altText: `Jannat Summer After Dark moment ${index + 1}`, albumId: album.id, eventId: past.id, sortOrder: index })));
   await db.insert(homepageSettingsTable).values({ id: 1, heroImage: images[0], heroVideo: null, heroHeadline: "Where the night feels like home.", heroSubtitle: "Classic Bollywood energy. New-school rhythm. Unforgettable nights across Canada.", ctaText: "See what is next", ctaUrl: "/events", featuredEventId: seededEvents[0].id });
-  await db.insert(siteSettingsTable).values({ id: 1, instagramUrl: "https://www.instagram.com/jannatcanada/", facebookUrl: "https://www.facebook.com/", tiktokUrl: null, contactEmail: "hello@jannat.events", cities: ["Toronto", "Vancouver", "Montréal", "Calgary"] });
+  await db.insert(siteSettingsTable).values({ id: 1, instagramUrl: "https://www.instagram.com/jannatcanada/", facebookUrl: "https://www.facebook.com/", tiktokUrl: null, contactEmail: "contactthejannat@gmail.com", cities: ["Toronto", "Vancouver", "Montréal", "Calgary"] });
 }
