@@ -129,6 +129,32 @@ router.get('/storage/objects/*path', async (req: Request, res: Response) => {
     const objectFile =
       await objectStorageService.getObjectEntityFile(objectPath);
 
+    const range = req.headers.range;
+    if (range) {
+      const [metadata] = await objectFile.getMetadata();
+      const size = Number(metadata.size);
+      const match = /^bytes=(\d+)-(\d*)$/.exec(range);
+      if (!match || !Number.isFinite(size)) {
+        res.status(416).setHeader('Content-Range', `bytes */${size || '*'}`);
+        res.end();
+        return;
+      }
+      const start = Number(match[1]);
+      const end = match[2] ? Math.min(Number(match[2]), size - 1) : size - 1;
+      if (start >= size || end < start) {
+        res.status(416).setHeader('Content-Range', `bytes */${size}`);
+        res.end();
+        return;
+      }
+      res.status(206);
+      res.setHeader('Accept-Ranges', 'bytes');
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+      res.setHeader('Content-Length', String(end - start + 1));
+      res.setHeader('Content-Type', String(metadata.contentType || 'application/octet-stream'));
+      objectFile.createReadStream({ start, end }).pipe(res);
+      return;
+    }
+
     // --- Protected route example (uncomment when using replit-auth) ---
     // if (!req.isAuthenticated()) {
     //   res.status(401).json({ error: "Unauthorized" });
@@ -147,6 +173,7 @@ router.get('/storage/objects/*path', async (req: Request, res: Response) => {
     const response = await objectStorageService.downloadObject(objectFile);
 
     res.status(response.status);
+    res.setHeader('Accept-Ranges', 'bytes');
     response.headers.forEach((value, key) => res.setHeader(key, value));
 
     if (response.body) {

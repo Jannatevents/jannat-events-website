@@ -119,8 +119,8 @@ function Home() {
     <PublicHeader />
     <div className="fixed right-5 top-24 z-40"><CountryToggle country={country} setCountry={setCountry} /></div>
     <section className="relative flex min-h-[92svh] items-end overflow-hidden">
-      {h?.heroVideo ? <video src={h.heroVideo} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img(h?.heroImage, 0)})` }} />}
-      <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(40,19,14,.9),rgba(40,19,14,.3)_58%,rgba(40,19,14,.55))]" />
+      {h?.heroVideo ? <video src={h.heroVideo} autoPlay muted loop playsInline preload="auto" className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img(h?.heroImage, 0)})` }} />}
+      <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(0,0,0,.58),rgba(0,0,0,.22)_58%,rgba(0,0,0,.35))]" />
       <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-44 lg:px-10 lg:pb-28">
         <p className="mono-font reveal text-[10px] uppercase tracking-[.28em] text-[#e5ae55]">A South Asian night out · across {country === Country.CA ? 'Canada' : 'the USA'}</p>
         <h1 className="display-font reveal reveal-delay-1 mt-6 max-w-4xl text-[clamp(3.7rem,10vw,9.5rem)] leading-[.82] tracking-[-.055em]">{h?.heroHeadline || 'Where the night feels like home.'}</h1>

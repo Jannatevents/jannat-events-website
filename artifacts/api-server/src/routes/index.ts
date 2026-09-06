@@ -8,7 +8,7 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(publicRouter);
-router.use(adminRouter);
 router.use(storageRouter);
+router.use(adminRouter);
 
 export default router;
