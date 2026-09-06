@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Jannat Events"
+description = "A premium South Asian entertainment and nightlife website for Jannat Events, with a cinematic public experience and an editable admin system for events, albums, media, homepage content, and contact inquiries."
+version = "1.0.0"
+id = "artifacts/jannat-events"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21678
+
+[services.development]
+run = "pnpm --filter @workspace/jannat-events run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/jannat-events", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/jannat-events/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21678"
+BASE_PATH = "/"
