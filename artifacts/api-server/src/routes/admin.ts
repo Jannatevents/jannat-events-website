@@ -1,6 +1,5 @@
-import { getAuth } from "@clerk/express";
 import { and, asc, desc, eq, ilike, or, type SQL } from "drizzle-orm";
-import { Router, type IRouter, type NextFunction, type Request, type Response } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
 import {
   CreateAlbumBody,
   CreateEventBody,
@@ -41,16 +40,11 @@ import {
   mediaTable,
   siteSettingsTable,
 } from "@workspace/db";
+import { requireJannatAdmin } from "../middlewares/requireJannatAdmin";
 
 const router: IRouter = Router();
 
-function requireAdmin(req: Request, res: Response, next: NextFunction): void {
-  if (!getAuth(req).userId) {
-    res.status(401).json({ error: "Authentication required" });
-    return;
-  }
-  next();
-}
+const requireAdmin = requireJannatAdmin;
 
 function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

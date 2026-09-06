@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from '@clerk/react';
+import { ClerkProvider, SignIn, SignUp, Show, useClerk, useUser } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { dark } from '@clerk/themes';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
@@ -242,7 +242,14 @@ function AdminMessages() {
 }
 
 function AuthPage({ signup = false }: { signup?: boolean }) { return <div className="jannat-grain grid min-h-[100dvh] place-items-center bg-[#351a16] px-5 py-10"><div className="w-full max-w-md"><Logo light /><div className="mt-8">{signup ? <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} /> : <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />}</div></div></div>; }
-function ProtectedAdmin({ children }: { children: React.ReactNode }) { return <><Show when="signed-in">{children}</Show><Show when="signed-out"><Redirect to="/sign-in" /></Show></>; }
+function ProtectedAdmin({ children }: { children: React.ReactNode }) {
+  const { isLoaded, isSignedIn, user } = useUser();
+  if (!isLoaded) return <div className="grid min-h-screen place-items-center bg-[#070604] text-[#f7e8c2]"><Loading /></div>;
+  if (!isSignedIn) return <Redirect to="/sign-in" />;
+  const isAdmin = user.emailAddresses.some(({ emailAddress }) => emailAddress.toLowerCase() === 'contactthejannat@gmail.com');
+  if (!isAdmin) return <div className="grid min-h-screen place-items-center bg-[#070604] px-5 text-center text-[#f7e8c2]"><div><Logo light /><h1 className="display-font mt-8 text-5xl">Access restricted.</h1><p className="mt-4 text-sm text-[#c7ad7a]">This account does not have permission to manage Jannat Events.</p><Link href="/" className="mt-8 inline-flex rounded-full bg-[#d7a84f] px-6 py-3 text-xs font-bold uppercase tracking-wider text-black">Return to website</Link></div></div>;
+  return <>{children}</>;
+}
 function ClerkCacheInvalidator() { const { addListener } = useClerk(); const qc = useQueryClient(); const previous = useRef<string | null | undefined>(undefined); useEffect(() => addListener(({ user }) => { const id = user?.id ?? null; if (previous.current !== undefined && previous.current !== id) qc.clear(); previous.current = id; }), [addListener, qc]); return null; }
 function Seo() { const [location] = useLocation(); useEffect(() => { const name = location.startsWith('/events/') ? 'Event details' : location.startsWith('/albums/') ? 'Album' : ({ '/': 'Premium South Asian Nights', '/events': 'Events', '/albums': 'Albums', '/about': 'Our Story', '/contact': 'Contact' } as Record<string, string>)[location] || 'Admin'; const title = `${name} | Jannat Events`; const description = 'Premium Bollywood and South Asian nightlife experiences across Canada.'; document.title = title; document.querySelector('meta[name="description"]')?.setAttribute('content', description); document.querySelector('meta[property="og:title"]')?.setAttribute('content', title); document.querySelector('meta[property="og:description"]')?.setAttribute('content', description); }, [location]); return null; }
 

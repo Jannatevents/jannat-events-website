@@ -11,6 +11,7 @@ import {
   ObjectNotFoundError,
   ObjectStorageService,
 } from '../lib/objectStorage';
+import { isJannatAdmin } from '../middlewares/requireJannatAdmin';
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -30,6 +31,10 @@ router.post(
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
 
+      return;
+    }
+    if (!(await isJannatAdmin(req))) {
+      res.status(403).json({ error: 'Admin access required' });
       return;
     }
 
