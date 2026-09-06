@@ -110,7 +110,8 @@ function Home() {
   const home = useGetHome();
   const events = useListPublicEvents({ status: EventStatus.UPCOMING, country });
   const albums = useListPublicAlbums();
-  if (home.isLoading || events.isLoading || albums.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
+  const site = useGetPublicSite();
+  if (home.isLoading || events.isLoading || albums.isLoading || site.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
   if (home.isError) return <><PublicHeader /><ErrorState retry={() => home.refetch()} /><PublicFooter /></>;
   const h = home.data;
   const upcoming = (events.data || []).slice(0, 3);
@@ -125,7 +126,7 @@ function Home() {
         <p className="mono-font reveal text-[10px] uppercase tracking-[.28em] text-[#e5ae55]">A South Asian night out · across {country === Country.CA ? 'Canada' : 'the USA'}</p>
         <h1 className="display-font reveal reveal-delay-1 mt-6 max-w-4xl text-[clamp(3.7rem,10vw,9.5rem)] leading-[.82] tracking-[-.055em]">{h?.heroHeadline || 'Where the night feels like home.'}</h1>
         <p className="reveal reveal-delay-2 mt-8 max-w-lg text-base leading-7 text-[#e6d5c8]">{h?.heroSubtitle || 'Classic Bollywood energy. New-school rhythm. A room full of people who came for the music and stayed for the moment.'}</p>
-        <div className="reveal reveal-delay-3 mt-9 flex flex-wrap items-center gap-4"><Link href={h?.ctaUrl || '/events'} className="focus-ring inline-flex items-center gap-3 rounded-full bg-[#e5ae55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[.16em] text-[#4b231b] transition hover:bg-[#f4cd81]" data-testid="link-hero-cta">{h?.ctaText || 'See what is next'} <ArrowUpRight size={16} /></Link><span className="mono-font text-[10px] uppercase tracking-[.2em] text-[#cbb1a0]">Toronto · Vancouver · Montréal · and beyond</span></div>
+        <div className="reveal reveal-delay-3 mt-9 flex flex-wrap items-center gap-4"><Link href={h?.ctaUrl || '/events'} className="focus-ring inline-flex items-center gap-3 rounded-full bg-[#e5ae55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[.16em] text-[#4b231b] transition hover:bg-[#f4cd81]" data-testid="link-hero-cta">{h?.ctaText || 'See what is next'} <ArrowUpRight size={16} /></Link><span className="mono-font text-[10px] uppercase tracking-[.2em] text-[#cbb1a0]" data-testid="text-home-cities">{site.data?.cities?.length ? `${site.data.cities.join(' · ')} · and beyond` : 'And beyond'}</span></div>
       </div>
       <div className="absolute bottom-6 right-6 hidden items-center gap-3 text-[#d8c5b5] lg:flex"><span className="mono-font text-[9px] uppercase tracking-[.2em]">Scroll to enter</span><ArrowDownRight size={16} /></div>
     </section>
