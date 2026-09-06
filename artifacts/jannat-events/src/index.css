@@ -461,13 +461,23 @@
 @keyframes pulse-line { 0%,100% { transform: scaleX(.65); opacity:.35 } 50% { transform: scaleX(1); opacity:1 } }
 .marquee-track { animation: marquee 28s linear infinite; width: max-content; }
 @keyframes marquee { to { transform: translateX(-50%); } }
-.poster-gradient { background: linear-gradient(180deg, transparent 35%, rgba(20,13,10,.88) 100%); }
+.poster-gradient { background: linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.34) 38%, rgba(0,0,0,.9) 100%); }
 .admin-shell { background: #f3ead7; }
 .focus-ring:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: 3px; }
 
-[data-testid^="card-event-"] > div { aspect-ratio: 16 / 9 !important; }
+[data-testid^="card-event-"] > div,
+[data-testid^="card-album-"] > div,
+[data-testid^="card-admin-album-"] > div:first-child { aspect-ratio: 3 / 4 !important; }
+[data-testid^="card-album-"] > div > img {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+}
+[data-testid^="card-album-"] > div > div:first-of-type {
+  background: linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,.42) 58%, rgba(0,0,0,.25)) !important;
+}
 label:has([data-testid="input-media-file"])::after {
-  content: "For event images: recommended 800 × 450 px, required 16:9 landscape ratio, JPG/PNG/WebP, 10 MB maximum.";
+  content: "For event and album images: recommended 1080 × 1440 px, required 3:4 portrait ratio, JPG/PNG/WebP, 10 MB maximum.";
   display: block;
   margin-top: .25rem;
   color: #806b5f;
