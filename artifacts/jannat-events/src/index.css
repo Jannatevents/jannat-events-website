@@ -450,7 +450,8 @@
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
   mix-blend-mode: multiply;
 }
-.display-font { font-family: var(--app-font-serif); }
+.display-font { font-family: var(--app-font-serif); font-style: normal; }
+.display-font i, i { font-style: normal; }
 .mono-font { font-family: var(--app-font-mono); }
 .reveal { animation: reveal-up .8s cubic-bezier(.2,.75,.2,1) both; }
 .reveal-delay-1 { animation-delay: .12s; }
@@ -461,5 +462,12 @@
 .marquee-track { animation: marquee 28s linear infinite; width: max-content; }
 @keyframes marquee { to { transform: translateX(-50%); } }
 .poster-gradient { background: linear-gradient(180deg, transparent 35%, rgba(20,13,10,.88) 100%); }
-.admin-shell { background: #f3ede2; }
+.admin-shell { background: #f3ead7; }
 .focus-ring:focus-visible { outline: 2px solid hsl(var(--accent)); outline-offset: 3px; }
+
+/* Jannat brand palette: black, antique gold, and warm champagne. */
+.bg-\[\#24120f\], .bg-\[\#351a16\], .bg-\[\#2b1916\] { background-color: #070604 !important; }
+.bg-\[\#f3e9dc\], .bg-\[\#f6f0e7\], .bg-\[\#f8f3eb\] { background-color: #f3ead7 !important; }
+.bg-\[\#e5ae55\], .bg-\[\#d69b45\] { background-color: #d7a84f !important; }
+.text-\[\#e5ae55\], .text-\[\#d69b45\], .text-\[\#edb95e\], .text-\[\#a45c3c\] { color: #d7a84f !important; }
+.border-\[\#6a4134\], .border-\[\#4b231b\], .border-\[\#8b5b2c\] { border-color: #8a682d !important; }
