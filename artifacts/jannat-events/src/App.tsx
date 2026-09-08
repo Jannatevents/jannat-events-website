@@ -44,7 +44,11 @@ const demoImages = [
 
 function img(url?: string | null, i = 0) { return url || demoImages[i % demoImages.length]; }
 function parseDisplayDate(date: string) {
-  const parsed = new Date(date.includes('T') ? date : `${date}T12:00:00`);
+  const dateOnly = date.slice(0, 10);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOnly);
+  const parsed = match
+    ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12)
+    : new Date(date);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 function dateLabel(date?: string | null) {

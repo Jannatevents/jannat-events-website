@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
 import { db, albumsTable, contactMessagesTable, eventsTable, homepageSettingsTable, mediaTable, siteSettingsTable } from "@workspace/db";
+import { refreshPastEvents } from "../lib/eventStatus";
 import {
   GetHomeResponse,
   GetPublicAlbumParams,
@@ -47,6 +48,7 @@ async function albumWithDetails(album: typeof albumsTable.$inferSelect) {
 }
 
 router.get("/public/home", async (req, res): Promise<void> => {
+  await refreshPastEvents();
   const [settings] = await db.select().from(homepageSettingsTable).limit(1);
   const [featured] = settings?.featuredEventId
     ? await db.select().from(eventsTable).where(eq(eventsTable.id, settings.featuredEventId)).limit(1)
@@ -67,6 +69,7 @@ router.get("/public/home", async (req, res): Promise<void> => {
 });
 
 router.get("/public/events", async (req, res): Promise<void> => {
+  await refreshPastEvents();
   const parsed = ListPublicEventsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -80,6 +83,7 @@ router.get("/public/events", async (req, res): Promise<void> => {
 });
 
 router.get("/public/events/:slug", async (req, res): Promise<void> => {
+  await refreshPastEvents();
   const parsed = GetPublicEventParams.safeParse(req.params);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });

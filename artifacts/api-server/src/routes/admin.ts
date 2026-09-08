@@ -41,6 +41,7 @@ import {
   siteSettingsTable,
 } from "@workspace/db";
 import { requireJannatAdmin } from "../middlewares/requireJannatAdmin";
+import { refreshPastEvents } from "../lib/eventStatus";
 
 const router: IRouter = Router();
 
@@ -84,6 +85,7 @@ async function getAlbumPayload(album: typeof albumsTable.$inferSelect) {
 router.use(requireAdmin);
 
 router.get("/admin/overview", async (_req, res): Promise<void> => {
+  await refreshPastEvents();
   const events = await db.select().from(eventsTable).orderBy(asc(eventsTable.date));
   const albums = await db.select().from(albumsTable);
   const media = await db.select().from(mediaTable);
@@ -101,6 +103,7 @@ router.get("/admin/overview", async (_req, res): Promise<void> => {
 });
 
 router.get("/admin/events", async (req, res): Promise<void> => {
+  await refreshPastEvents();
   const parsed = ListAdminEventsQueryParams.safeParse(req.query);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -144,6 +147,7 @@ router.post("/admin/events", async (req, res): Promise<void> => {
 });
 
 router.get("/admin/events/:id", async (req, res): Promise<void> => {
+  await refreshPastEvents();
   const parsed = GetAdminEventParams.safeParse(req.params);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
   const [event] = await db.select().from(eventsTable).where(eq(eventsTable.id, parsed.data.id)).limit(1);

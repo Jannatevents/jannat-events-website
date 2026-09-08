@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { ensureSeeded } from "./seed";
+import { refreshPastEvents } from "./lib/eventStatus";
 
 const rawPort = process.env["PORT"];
 
@@ -25,4 +26,9 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  const refresh = () => {
+    void refreshPastEvents().catch((error) => logger.error({ error }, "Could not refresh event statuses"));
+  };
+  refresh();
+  setInterval(refresh, 60_000);
 });
