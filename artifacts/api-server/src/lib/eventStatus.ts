@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, ne } from "drizzle-orm";
 import { db, eventsTable } from "@workspace/db";
 
 const CITY_TIME_ZONES: Record<string, string> = {
@@ -90,7 +90,13 @@ function hasPassed(event: typeof eventsTable.$inferSelect, now = new Date()) {
 }
 
 export async function refreshPastEvents() {
-  const upcoming = await db.select().from(eventsTable).where(eq(eventsTable.status, "UPCOMING"));
-  const past = upcoming.filter((event) => hasPassed(event));
-  await Promise.all(past.map((event) => db.update(eventsTable).set({ status: "PAST", updatedAt: new Date() }).where(eq(eventsTable.id, event.id))));
+  const scheduled = await db.select().from(eventsTable).where(ne(eventsTable.status, "DRAFT"));
+  const updates = scheduled.filter((event) => {
+    const nextStatus = hasPassed(event) ? "PAST" : "UPCOMING";
+    return event.status !== nextStatus;
+  });
+  await Promise.all(updates.map((event) => db.update(eventsTable).set({
+    status: hasPassed(event) ? "PAST" : "UPCOMING",
+    updatedAt: new Date(),
+  }).where(eq(eventsTable.id, event.id))));
 }
