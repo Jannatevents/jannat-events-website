@@ -314,6 +314,32 @@ export interface HomePageUpdate {
   featuredEventId?: number | null;
 }
 
+export interface AboutPage {
+  heroEyebrow: string;
+  heroTitle: string;
+  introEyebrow: string;
+  introTitle: string;
+  introParagraphs: string[];
+  /** @nullable */
+  featureImage?: string | null;
+  featureEyebrow: string;
+  featureTitle: string;
+  featureDescription: string;
+}
+
+export interface AboutPageUpdate {
+  heroEyebrow?: string;
+  heroTitle?: string;
+  introEyebrow?: string;
+  introTitle?: string;
+  introParagraphs?: string[];
+  /** @nullable */
+  featureImage?: string | null;
+  featureEyebrow?: string;
+  featureTitle?: string;
+  featureDescription?: string;
+}
+
 export interface SiteSettings {
   instagramUrl: string;
   /** @nullable */

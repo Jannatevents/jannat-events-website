@@ -4,7 +4,7 @@ import { publishableKeyFromHost } from '@clerk/react/internal';
 import { dark } from '@clerk/themes';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import {
-  ArrowDownRight, ArrowLeft, ArrowUpRight, CalendarDays, Check, ChevronDown,
+  ArrowDownRight, ArrowLeft, ArrowUpRight, BookOpen, CalendarDays, Check, ChevronDown,
   ChevronRight, CircleAlert, ExternalLink, Facebook, ImagePlus, Instagram,
   LayoutDashboard, Link as LinkIcon, Loader2, LogOut, Mail, MapPin, Menu, MessageCircle,
   Moon, Pencil, Plus, Search, Settings, Sparkles, Ticket, Trash2, UploadCloud,
@@ -12,18 +12,18 @@ import {
 } from 'lucide-react';
 import {
   Country, EventStatus, MediaType, ContactInputInquiryType,
-  getGetAdminAlbumQueryKey, getGetAdminEventQueryKey, getGetAdminOverviewQueryKey,
+  getGetAboutQueryKey, getGetAdminAboutQueryKey, getGetAdminAlbumQueryKey, getGetAdminEventQueryKey, getGetAdminOverviewQueryKey,
   getGetHomepageSettingsQueryKey, getGetPublicAlbumQueryKey, getGetPublicEventQueryKey,
   getGetSiteSettingsQueryKey, getListAdminAlbumsQueryKey, getListAdminEventsQueryKey,
   getListAdminMediaQueryKey, getListContactMessagesQueryKey, getListPublicAlbumsQueryKey,
   getListPublicEventsQueryKey, getGetHomeQueryKey, getGetPublicSiteQueryKey,
   useCreateAlbum, useCreateEvent, useCreateMedia, useDeleteAlbum, useDeleteEvent,
   useDeleteMedia, useDuplicateEvent, useGetAdminAlbum, useGetAdminEvent,
-  useGetAdminOverview, useGetHome, useGetHomepageSettings, useGetPublicAlbum,
+  useGetAbout, useGetAdminAbout, useGetAdminOverview, useGetHome, useGetHomepageSettings, useGetPublicAlbum,
   useGetPublicEvent, useGetPublicSite, useGetSiteSettings, useListAdminAlbums,
   useListAdminEvents, useListAdminMedia, useListContactMessages, useListPublicAlbums,
   useListPublicEvents, useRequestUploadUrl, useSubmitContact, useUpdateAlbum,
-  useUpdateEvent, useUpdateHomepageSettings, useUpdateMedia, useUpdateSiteSettings,
+  useUpdateAbout, useUpdateEvent, useUpdateHomepageSettings, useUpdateMedia, useUpdateSiteSettings,
 } from '@workspace/api-client-react';
 import { Link, Redirect, Route, Switch, useLocation, useParams, Router as WouterRouter } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -251,7 +251,11 @@ function AlbumDetail() {
 }
 
 function About() {
-  return <div className="jannat-grain min-h-screen bg-[#f3e9dc] text-[#4b231b]"><PublicHeader /><section className="bg-[#351a16] px-5 pb-20 pt-36 text-[#f7eddf] lg:px-10 lg:pb-28"><div className="mx-auto max-w-7xl"><p className="mono-font text-[10px] uppercase tracking-[.25em] text-[#e5ae55]">Our story</p><h1 className="display-font mt-5 max-w-4xl text-6xl leading-[.9] md:text-9xl">A little bit<br />of everywhere.</h1></div></section><main><section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-2 lg:px-10 lg:py-28"><div><p className="mono-font text-[10px] uppercase tracking-[.25em] text-[#a45c3c]">Why Jannat exists</p><h2 className="display-font mt-4 text-5xl leading-[.95] md:text-7xl">The soundtrack<br />to belonging.</h2></div><div className="space-y-5 text-base leading-8 text-[#6d564b]"><p>Jannat is a love letter to the South Asian community across Canada, a place where the classics still hit, new sounds find their people, and a dance floor can feel like home.</p><p>We make nights that move between generations. The old chorus, the new beat, the friend you came with, and the stranger you leave knowing. That is the magic we are here for.</p><p>Every city has its own rhythm. We are here to turn it up.</p></div></section><section className="grid min-h-[55vh] grid-cols-2 bg-[#d69b45] text-[#4b231b]"><div className="col-span-2 min-h-[30vh] bg-cover bg-center md:col-span-1 md:min-h-full" style={{ backgroundImage: `url(${demoImages[2]})` }} /><div className="col-span-2 flex items-end p-8 md:col-span-1 md:p-14"><div><p className="mono-font text-[10px] uppercase tracking-[.25em]">Across Canada</p><p className="display-font mt-5 text-5xl leading-[.9] md:text-7xl">Many cities.<br />One feeling.</p><p className="mt-8 max-w-sm text-sm leading-7">Toronto, Vancouver, Montréal, Calgary, and the places still to come.</p></div></div></section></main><PublicFooter /></div>;
+  const q = useGetAbout();
+  if (q.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
+  if (q.isError || !q.data) return <><PublicHeader /><ErrorState retry={() => q.refetch()} /><PublicFooter /></>;
+  const about = q.data;
+  return <div className="jannat-grain min-h-screen bg-[#f3e9dc] text-[#4b231b]"><PublicHeader /><section className="bg-[#351a16] px-5 pb-20 pt-36 text-[#f7eddf] lg:px-10 lg:pb-28"><div className="mx-auto max-w-7xl"><p className="mono-font text-[10px] uppercase tracking-[.25em] text-[#e5ae55]">{about.heroEyebrow}</p><h1 className="display-font mt-5 max-w-4xl whitespace-pre-line text-6xl leading-[.9] md:text-9xl">{about.heroTitle}</h1></div></section><main><section className="mx-auto grid max-w-7xl gap-12 px-5 py-20 lg:grid-cols-2 lg:px-10 lg:py-28"><div><p className="mono-font text-[10px] uppercase tracking-[.25em] text-[#a45c3c]">{about.introEyebrow}</p><h2 className="display-font mt-4 max-w-xl whitespace-pre-line text-5xl leading-[.95] md:text-7xl">{about.introTitle}</h2></div><div className="space-y-5 text-base leading-8 text-[#6d564b]">{about.introParagraphs.map((paragraph, index) => <p key={`${paragraph}-${index}`}>{paragraph}</p>)}</div></section><section className="grid min-h-[55vh] grid-cols-2 bg-[#d69b45] text-[#4b231b]"><div className="col-span-2 min-h-[30vh] bg-cover bg-center md:col-span-1 md:min-h-full" style={{ backgroundImage: `url(${img(about.featureImage, 2)})`, backgroundPosition: cropPosition(about.featureImage) }} /><div className="col-span-2 flex items-end p-8 md:col-span-1 md:p-14"><div><p className="mono-font text-[10px] uppercase tracking-[.25em]">{about.featureEyebrow}</p><p className="display-font mt-5 max-w-xl whitespace-pre-line text-5xl leading-[.9] md:text-7xl">{about.featureTitle}</p><p className="mt-8 max-w-sm text-sm leading-7">{about.featureDescription}</p></div></div></section></main><PublicFooter /></div>;
 }
 
 function Contact() {
@@ -265,7 +269,7 @@ function Contact() {
 
 function Field({ label, value, onChange, type = 'text', required = false, testId }: { label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean; testId: string }) { return <label className="grid gap-2 text-xs font-bold"><span>{label}</span><input required={required} type={type} value={value} onChange={(e) => onChange(e.target.value)} className="focus-ring h-11 border-b border-[#bda894] bg-transparent text-sm outline-none" data-testid={testId} /></label>; }
 
-const adminLinks = [['Overview', '/admin', LayoutDashboard], ['Events', '/admin/events', CalendarDays], ['Albums', '/admin/albums', ImagePlus], ['Media library', '/admin/media', UploadCloud], ['Homepage', '/admin/homepage', Sparkles], ['Messages', '/admin/messages', MessageCircle], ['Settings', '/admin/settings', Settings]] as const;
+const adminLinks = [['Overview', '/admin', LayoutDashboard], ['Events', '/admin/events', CalendarDays], ['Albums', '/admin/albums', ImagePlus], ['Media library', '/admin/media', UploadCloud], ['Homepage', '/admin/homepage', Sparkles], ['About', '/admin/about', BookOpen], ['Messages', '/admin/messages', MessageCircle], ['Settings', '/admin/settings', Settings]] as const;
 function UploadProgressToast() {
   const [state, setState] = useState({ active: false, progress: 0, name: '' });
   useEffect(() => { const listener = (event: Event) => setState((event as CustomEvent).detail); window.addEventListener('jannat-upload-progress', listener); return () => window.removeEventListener('jannat-upload-progress', listener); }, []);
@@ -385,6 +389,37 @@ function AdminMedia() {
 function AdminHomepage() {
   const q = useGetHomepageSettings(); const events = useListAdminEvents(); const update = useUpdateHomepageSettings(); const qc = useQueryClient(); const [form, setForm] = useState<any>(null); useMemo(() => { if (q.data && !form) setForm({ ...q.data, heroImage: q.data.heroImage || '', heroVideo: q.data.heroVideo || '', featuredEventId: q.data.featuredEventId || '' }); return null; }, [q.data, form]); if (q.isLoading || !form) return <AdminShell><Loading /></AdminShell>; const set = (k: string, v: any) => setForm({ ...form, [k]: v }); const save = (e: React.FormEvent) => { e.preventDefault(); update.mutate({ data: { ...form, featuredEventId: form.featuredEventId ? Number(form.featuredEventId) : null, heroImage: form.heroImage || null, heroVideo: form.heroVideo || null } }, { onSuccess: () => qc.invalidateQueries({ queryKey: getGetHomepageSettingsQueryKey() }) }); }; return <AdminShell><AdminHeading eyebrow="Content / Homepage" title="Set the scene." /><form onSubmit={save} className="max-w-4xl border border-[#d8c8b8] bg-[#f8f3eb] p-5 sm:p-8"><div className="grid gap-5"><AdminField label="Hero headline" value={form.heroHeadline} set={(v) => set('heroHeadline', v)} id="input-home-hero-headline" /><AdminField label="Hero subtitle" value={form.heroSubtitle} set={(v) => set('heroSubtitle', v)} id="input-home-hero-subtitle" /><AdminField label="Hero image URL" value={form.heroImage} set={(v) => set('heroImage', v)} id="input-home-hero-image" /><AdminField label="Hero video URL (optional)" value={form.heroVideo} set={(v) => set('heroVideo', v)} id="input-home-hero-video" /><AdminField label="CTA text" value={form.ctaText} set={(v) => set('ctaText', v)} id="input-home-cta-text" /><AdminField label="CTA URL" value={form.ctaUrl} set={(v) => set('ctaUrl', v)} id="input-home-cta-url" /><label className="grid gap-2 text-xs font-bold"><span>Featured event</span><select value={form.featuredEventId} onChange={(e) => set('featuredEventId', e.target.value)} className="h-10 border-b border-[#bda894] bg-transparent" data-testid="select-featured-event"><option value="">None</option>{events.data?.map((e) => <option value={e.id} key={e.id}>{e.title}</option>)}</select></label></div><button disabled={update.isPending} className="mt-8 rounded-full bg-[#4b231b] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#f7eddf]" data-testid="button-save-homepage">Save homepage</button></form></AdminShell>;
 }
+function AdminAbout() {
+  const q = useGetAdminAbout();
+  const update = useUpdateAbout();
+  const qc = useQueryClient();
+  const [form, setForm] = useState<any>(null);
+  const [saved, setSaved] = useState(false);
+  useMemo(() => {
+    if (q.data && !form) setForm({ ...q.data, featureImage: q.data.featureImage || '', introParagraphs: q.data.introParagraphs.join('\n\n') });
+    return null;
+  }, [q.data, form]);
+  if (!form) return <AdminShell><Loading /></AdminShell>;
+  const set = (key: string, value: string) => { setSaved(false); setForm({ ...form, [key]: value }); };
+  const save = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaved(false);
+    update.mutate({
+      data: {
+        ...form,
+        introParagraphs: form.introParagraphs.split(/\n\s*\n/).map((paragraph: string) => paragraph.trim()).filter(Boolean),
+        featureImage: form.featureImage.trim() || null,
+      },
+    }, {
+      onSuccess: () => {
+        setSaved(true);
+        qc.invalidateQueries({ queryKey: getGetAdminAboutQueryKey() });
+        qc.invalidateQueries({ queryKey: getGetAboutQueryKey() });
+      },
+    });
+  };
+  return <AdminShell><AdminHeading eyebrow="Content / About" title="Tell the story." /><form onSubmit={save} className="max-w-4xl border border-[#d8c8b8] bg-[#f8f3eb] p-5 sm:p-8"><div className="grid gap-5"><div className="border-b border-[#d8c8b8] pb-5"><p className="mono-font text-[10px] uppercase tracking-[.2em] text-[#a45c3c]">Opening</p><div className="mt-5 grid gap-5"><AdminField label="Eyebrow" value={form.heroEyebrow} set={(v) => set('heroEyebrow', v)} id="input-about-hero-eyebrow" /><label className="grid gap-2 text-xs font-bold"><span>Headline</span><textarea rows={3} value={form.heroTitle} onChange={(e) => set('heroTitle', e.target.value)} className="focus-ring resize-y border border-[#d8c8b8] bg-transparent p-3 text-sm" data-testid="textarea-about-hero-title" /></label></div></div><div className="border-b border-[#d8c8b8] pb-5"><p className="mono-font text-[10px] uppercase tracking-[.2em] text-[#a45c3c]">Intro</p><div className="mt-5 grid gap-5"><AdminField label="Eyebrow" value={form.introEyebrow} set={(v) => set('introEyebrow', v)} id="input-about-intro-eyebrow" /><label className="grid gap-2 text-xs font-bold"><span>Title</span><textarea rows={3} value={form.introTitle} onChange={(e) => set('introTitle', e.target.value)} className="focus-ring resize-y border border-[#d8c8b8] bg-transparent p-3 text-sm" data-testid="textarea-about-intro-title" /></label><label className="grid gap-2 text-xs font-bold"><span>Paragraphs</span><span className="font-normal text-[#806b5f]">Separate each paragraph with a blank line.</span><textarea rows={10} value={form.introParagraphs} onChange={(e) => set('introParagraphs', e.target.value)} className="focus-ring resize-y border border-[#d8c8b8] bg-transparent p-3 text-sm leading-7" data-testid="textarea-about-paragraphs" /></label></div></div><div><p className="mono-font text-[10px] uppercase tracking-[.2em] text-[#a45c3c]">Feature panel</p><div className="mt-5 grid gap-5"><AdminImageUpload label="Feature image" value={form.featureImage} set={(v) => set('featureImage', v)} id="input-about-feature-image" /><AdminField label="Eyebrow" value={form.featureEyebrow} set={(v) => set('featureEyebrow', v)} id="input-about-feature-eyebrow" /><label className="grid gap-2 text-xs font-bold"><span>Title</span><textarea rows={3} value={form.featureTitle} onChange={(e) => set('featureTitle', e.target.value)} className="focus-ring resize-y border border-[#d8c8b8] bg-transparent p-3 text-sm" data-testid="textarea-about-feature-title" /></label><label className="grid gap-2 text-xs font-bold"><span>Description</span><textarea rows={4} value={form.featureDescription} onChange={(e) => set('featureDescription', e.target.value)} className="focus-ring resize-y border border-[#d8c8b8] bg-transparent p-3 text-sm" data-testid="textarea-about-feature-description" /></label></div></div></div><div className="mt-8 flex flex-wrap items-center gap-4"><button disabled={update.isPending} className="rounded-full bg-[#4b231b] px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#f7eddf] disabled:cursor-wait disabled:opacity-60" data-testid="button-save-about">{update.isPending ? 'Saving…' : 'Save About page'}</button>{saved && <span className="text-sm font-bold text-[#35633e]" role="status">About page saved successfully.</span>}{update.isError && <span className="text-sm font-bold text-[#9f4939]" role="alert">Could not save. Check the fields and try again.</span>}</div></form></AdminShell>;
+}
 function AdminSettings() {
   const q = useGetSiteSettings();
   const update = useUpdateSiteSettings();
@@ -439,6 +474,7 @@ function Seo() { const [location] = useLocation(); useEffect(() => { const name 
 
 function Router() {
   return <ErrorBoundary resetKey={window.location.pathname}><Switch>
+    <Route path="/admin/about" component={() => <ProtectedAdmin><AdminAbout /></ProtectedAdmin>} />
     <Route path="/" component={Home} /><Route path="/events" component={Events} /><Route path="/events/:slug" component={EventDetail} /><Route path="/albums" component={Albums} /><Route path="/albums/:slug" component={AlbumDetail} /><Route path="/about" component={About} /><Route path="/contact" component={Contact} /><Route path="/admin/login"><Redirect to="/sign-in" /></Route><Route path="/sign-in/*?" component={AuthPage} /><Route path="/sign-up/*?"><Redirect to="/sign-in" /></Route><Route path="/admin" component={() => <ProtectedAdmin><AdminDashboard /></ProtectedAdmin>} /><Route path="/admin/events" component={() => <ProtectedAdmin><AdminEvents /></ProtectedAdmin>} /><Route path="/admin/events/new" component={() => <ProtectedAdmin><EventForm /></ProtectedAdmin>} /><Route path="/admin/events/:id/edit" component={() => { const { id } = useParams<{ id: string }>(); return <ProtectedAdmin><EventForm editId={Number(id)} /></ProtectedAdmin>; }} /><Route path="/admin/albums" component={() => <ProtectedAdmin><AdminAlbums /></ProtectedAdmin>} /><Route path="/admin/albums/new" component={() => <ProtectedAdmin><AlbumForm /></ProtectedAdmin>} /><Route path="/admin/albums/:id/edit" component={() => { const { id } = useParams<{ id: string }>(); return <ProtectedAdmin><AlbumForm editId={Number(id)} /></ProtectedAdmin>; }} /><Route path="/admin/media" component={() => <ProtectedAdmin><AdminMedia /></ProtectedAdmin>} /><Route path="/admin/homepage" component={() => <ProtectedAdmin><AdminHomepage /></ProtectedAdmin>} /><Route path="/admin/settings" component={() => <ProtectedAdmin><AdminSettings /></ProtectedAdmin>} /><Route path="/admin/messages" component={() => <ProtectedAdmin><AdminMessages /></ProtectedAdmin>} /><Route component={NotFound} />
   </Switch></ErrorBoundary>;
 }

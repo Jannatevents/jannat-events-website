@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './aboutPage';
+export * from './aboutPageUpdate';
 export * from './adminOverview';
 export * from './album';
 export * from './albumDetail';

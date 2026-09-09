@@ -1,9 +1,11 @@
 import { Router, type IRouter } from "express";
 import { and, asc, desc, eq, ilike, or } from "drizzle-orm";
-import { db, albumsTable, contactMessagesTable, eventsTable, homepageSettingsTable, mediaTable, siteSettingsTable } from "@workspace/db";
+import { db, albumsTable, aboutSettingsTable, contactMessagesTable, eventsTable, homepageSettingsTable, mediaTable, siteSettingsTable } from "@workspace/db";
 import { refreshPastEvents } from "../lib/eventStatus";
+import { aboutPayload } from "../lib/about";
 import {
   GetHomeResponse,
+  GetAboutResponse,
   GetPublicAlbumParams,
   GetPublicAlbumResponse,
   GetPublicEventParams,
@@ -130,6 +132,11 @@ router.get("/public/site", async (_req, res): Promise<void> => {
     contactEmail: settings?.contactEmail ?? null,
     cities: settings?.cities ?? [],
   }));
+});
+
+router.get("/public/about", async (_req, res): Promise<void> => {
+  const [settings] = await db.select().from(aboutSettingsTable).limit(1);
+  res.json(GetAboutResponse.parse(aboutPayload(settings)));
 });
 
 router.post("/contact", async (req, res): Promise<void> => {

@@ -20,6 +20,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AboutPage,
+  AboutPageUpdate,
   AdminOverview,
   Album,
   AlbumDetail,
@@ -610,6 +612,83 @@ export function useGetPublicSite<TData = Awaited<ReturnType<typeof getPublicSite
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetPublicSiteQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAboutUrl = () => {
+
+
+
+
+  return `/api/public/about`
+}
+
+/**
+ * @summary Get public About page content
+ */
+export const getAbout = async ( options?: Parameters<typeof customFetch>[1]): Promise<AboutPage> => {
+
+  return customFetch<AboutPage>(getGetAboutUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAboutQueryKey = () => {
+    return [
+    `/api/public/about`
+    ] as const;
+    }
+
+
+export const getGetAboutQueryOptions = <TData = Awaited<ReturnType<typeof getAbout>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAbout>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAboutQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAbout>>> = ({ signal }) => getAbout({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAbout>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAboutQueryResult = NonNullable<Awaited<ReturnType<typeof getAbout>>>
+export type GetAboutQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get public About page content
+ */
+
+export function useGetAbout<TData = Awaited<ReturnType<typeof getAbout>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAbout>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAboutQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -2035,6 +2114,154 @@ export const useUpdateHomepageSettings = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getUpdateHomepageSettingsMutationOptions(options));
+    }
+
+export const getGetAdminAboutUrl = () => {
+
+
+
+
+  return `/api/admin/about`
+}
+
+/**
+ * @summary Get About page settings
+ */
+export const getAdminAbout = async ( options?: Parameters<typeof customFetch>[1]): Promise<AboutPage> => {
+
+  return customFetch<AboutPage>(getGetAdminAboutUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminAboutQueryKey = () => {
+    return [
+    `/api/admin/about`
+    ] as const;
+    }
+
+
+export const getGetAdminAboutQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAbout>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAbout>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminAboutQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAbout>>> = ({ signal }) => getAdminAbout({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAbout>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminAboutQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAbout>>>
+export type GetAdminAboutQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get About page settings
+ */
+
+export function useGetAdminAbout<TData = Awaited<ReturnType<typeof getAdminAbout>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAbout>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminAboutQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateAboutUrl = () => {
+
+
+
+
+  return `/api/admin/about`
+}
+
+/**
+ * @summary Update About page settings
+ */
+export const updateAbout = async (aboutPageUpdate: AboutPageUpdate, options?: Parameters<typeof customFetch>[1]): Promise<AboutPage> => {
+
+  return customFetch<AboutPage>(getUpdateAboutUrl(),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(aboutPageUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateAboutMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAbout>>, TError,{data: BodyType<AboutPageUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateAbout>>, TError,{data: BodyType<AboutPageUpdate>}, TContext> => {
+
+const mutationKey = ['updateAbout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateAbout>>, {data: BodyType<AboutPageUpdate>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateAbout(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateAboutMutationResult = NonNullable<Awaited<ReturnType<typeof updateAbout>>>
+    export type UpdateAboutMutationBody = BodyType<AboutPageUpdate>
+    export type UpdateAboutMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update About page settings
+ */
+export const useUpdateAbout = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateAbout>>, TError,{data: BodyType<AboutPageUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateAbout>>,
+        TError,
+        {data: BodyType<AboutPageUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateAboutMutationOptions(options));
     }
 
 export const getGetSiteSettingsUrl = () => {

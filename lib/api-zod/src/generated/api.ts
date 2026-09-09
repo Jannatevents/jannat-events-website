@@ -234,6 +234,22 @@ export const GetPublicSiteResponse = zod.object({
 
 
 /**
+ * @summary Get public About page content
+ */
+export const GetAboutResponse = zod.object({
+  "heroEyebrow": zod.string(),
+  "heroTitle": zod.string(),
+  "introEyebrow": zod.string(),
+  "introTitle": zod.string(),
+  "introParagraphs": zod.array(zod.string()),
+  "featureImage": zod.string().nullish(),
+  "featureEyebrow": zod.string(),
+  "featureTitle": zod.string(),
+  "featureDescription": zod.string()
+})
+
+
+/**
  * @summary Submit a contact inquiry
  */
 
@@ -909,6 +925,50 @@ export const UpdateHomepageSettingsResponse = zod.object({
   "sortOrder": zod.number().int(),
   "createdAt": zod.coerce.date()
 }))
+})
+
+
+/**
+ * @summary Get About page settings
+ */
+export const GetAdminAboutResponse = zod.object({
+  "heroEyebrow": zod.string(),
+  "heroTitle": zod.string(),
+  "introEyebrow": zod.string(),
+  "introTitle": zod.string(),
+  "introParagraphs": zod.array(zod.string()),
+  "featureImage": zod.string().nullish(),
+  "featureEyebrow": zod.string(),
+  "featureTitle": zod.string(),
+  "featureDescription": zod.string()
+})
+
+
+/**
+ * @summary Update About page settings
+ */
+export const UpdateAboutBody = zod.object({
+  "heroEyebrow": zod.string().optional(),
+  "heroTitle": zod.string().optional(),
+  "introEyebrow": zod.string().optional(),
+  "introTitle": zod.string().optional(),
+  "introParagraphs": zod.array(zod.string()).optional(),
+  "featureImage": zod.string().nullish(),
+  "featureEyebrow": zod.string().optional(),
+  "featureTitle": zod.string().optional(),
+  "featureDescription": zod.string().optional()
+})
+
+export const UpdateAboutResponse = zod.object({
+  "heroEyebrow": zod.string(),
+  "heroTitle": zod.string(),
+  "introEyebrow": zod.string(),
+  "introTitle": zod.string(),
+  "introParagraphs": zod.array(zod.string()),
+  "featureImage": zod.string().nullish(),
+  "featureEyebrow": zod.string(),
+  "featureTitle": zod.string(),
+  "featureDescription": zod.string()
 })
 
 

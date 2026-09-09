@@ -10,6 +10,7 @@ import {
   DuplicateEventParams,
   GetAdminAlbumParams,
   GetAdminEventParams,
+  GetAdminAboutResponse,
   GetAdminOverviewResponse,
   GetHomepageSettingsResponse,
   GetSiteSettingsResponse,
@@ -30,9 +31,12 @@ import {
   UpdateHomepageSettingsResponse,
   UpdateSiteSettingsBody,
   UpdateSiteSettingsResponse,
+  UpdateAboutBody,
+  UpdateAboutResponse,
 } from "@workspace/api-zod";
 import {
   albumsTable,
+  aboutSettingsTable,
   contactMessagesTable,
   db,
   eventsTable,
@@ -42,6 +46,7 @@ import {
 } from "@workspace/db";
 import { requireJannatAdmin } from "../middlewares/requireJannatAdmin";
 import { refreshPastEvents } from "../lib/eventStatus";
+import { aboutPayload } from "../lib/about";
 
 const router: IRouter = Router();
 
@@ -367,6 +372,31 @@ router.patch("/admin/homepage", async (req, res): Promise<void> => {
   await db.insert(homepageSettingsTable).values(values).onConflictDoUpdate({ target: homepageSettingsTable.id, set: values });
   const [saved] = await db.select().from(homepageSettingsTable).limit(1);
   res.json(UpdateHomepageSettingsResponse.parse({ ...saved, featuredEvent: null, gallery: [] }));
+});
+
+router.get("/admin/about", async (_req, res): Promise<void> => {
+  const [settings] = await db.select().from(aboutSettingsTable).limit(1);
+  res.json(GetAdminAboutResponse.parse(aboutPayload(settings)));
+});
+
+router.patch("/admin/about", async (req, res): Promise<void> => {
+  const parsed = UpdateAboutBody.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const values = {
+    id: 1,
+    heroEyebrow: parsed.data.heroEyebrow ?? "Our story",
+    heroTitle: parsed.data.heroTitle ?? "A little bit of everywhere.",
+    introEyebrow: parsed.data.introEyebrow ?? "Why Jannat exists",
+    introTitle: parsed.data.introTitle ?? "The soundtrack to belonging.",
+    introParagraphs: parsed.data.introParagraphs ?? [],
+    featureImage: parsed.data.featureImage ?? null,
+    featureEyebrow: parsed.data.featureEyebrow ?? "Across Canada",
+    featureTitle: parsed.data.featureTitle ?? "Many cities. One feeling.",
+    featureDescription: parsed.data.featureDescription ?? "Toronto, Vancouver, Montréal, Calgary, and the places still to come.",
+  };
+  await db.insert(aboutSettingsTable).values(values).onConflictDoUpdate({ target: aboutSettingsTable.id, set: values });
+  const [saved] = await db.select().from(aboutSettingsTable).limit(1);
+  res.json(UpdateAboutResponse.parse(aboutPayload(saved)));
 });
 
 router.get("/admin/settings", async (_req, res): Promise<void> => {
