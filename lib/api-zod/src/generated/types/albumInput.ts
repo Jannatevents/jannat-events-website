@@ -14,6 +14,9 @@ export interface AlbumInput {
   description: string;
   /** @nullable */
   coverImage?: string | null;
+  date: Date;
+  /** @minLength 1 */
+  driveUrl: string;
   /** @nullable */
   eventId?: number | null;
   published?: boolean;

@@ -6,6 +6,8 @@ export const albumsTable = pgTable("albums", {
   slug: text("slug").notNull().unique(),
   description: text("description").notNull().default(""),
   coverImage: text("cover_image"),
+  albumDate: date("album_date", { mode: "string" }),
+  driveUrl: text("drive_url"),
   eventId: integer("event_id"),
   published: boolean("published").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

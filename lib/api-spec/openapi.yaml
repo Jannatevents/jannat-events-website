@@ -683,6 +683,7 @@ components:
         slug: { type: string }
         description: { type: string }
         coverImage: { type: ["string", "null"] }
+        driveUrl: { type: ["string", "null"], format: uri }
         eventId: { type: ["integer", "null"] }
         eventTitle: { type: ["string", "null"] }
         city: { type: ["string", "null"] }
@@ -692,12 +693,14 @@ components:
       required: [id, title, slug, description, published, createdAt]
     AlbumInput:
       type: object
-      required: [title, description]
+      required: [title, description, date, driveUrl]
       properties:
         title: { type: string, minLength: 1 }
         slug: { type: ["string", "null"] }
         description: { type: string }
         coverImage: { type: ["string", "null"] }
+        date: { type: string, format: date }
+        driveUrl: { type: string, format: uri, minLength: 1 }
         eventId: { type: ["integer", "null"] }
         published: { type: boolean, default: false }
     AlbumUpdate:
@@ -707,6 +710,8 @@ components:
         slug: { type: string }
         description: { type: string }
         coverImage: { type: ["string", "null"] }
+        date: { type: ["string", "null"], format: date }
+        driveUrl: { type: ["string", "null"], format: uri }
         eventId: { type: ["integer", "null"] }
         published: { type: boolean }
     AlbumDetail:

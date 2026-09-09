@@ -14,6 +14,10 @@ export interface AlbumUpdate {
   /** @nullable */
   coverImage?: string | null;
   /** @nullable */
+  date?: Date | null;
+  /** @nullable */
+  driveUrl?: string | null;
+  /** @nullable */
   eventId?: number | null;
   published?: boolean;
 }

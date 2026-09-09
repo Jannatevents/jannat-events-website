@@ -155,6 +155,7 @@ export const GetPublicEventResponse = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -174,6 +175,7 @@ export const ListPublicAlbumsResponseItem = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -197,6 +199,7 @@ export const GetPublicAlbumResponse = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -450,6 +453,7 @@ export const GetAdminEventResponse = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -580,6 +584,7 @@ export const ListAdminAlbumsResponseItem = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -594,6 +599,7 @@ export const ListAdminAlbumsResponse = zod.array(ListAdminAlbumsResponseItem)
  * @summary Create an album
  */
 
+
 export const createAlbumBodyPublishedDefault = false;
 
 export const CreateAlbumBody = zod.object({
@@ -601,6 +607,8 @@ export const CreateAlbumBody = zod.object({
   "slug": zod.string().nullish(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "date": zod.coerce.date(),
+  "driveUrl": zod.string().url().min(1),
   "eventId": zod.number().int().nullish(),
   "published": zod.boolean().default(createAlbumBodyPublishedDefault)
 })
@@ -611,6 +619,7 @@ export const CreateAlbumResponse = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -633,6 +642,7 @@ export const GetAdminAlbumResponse = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),
@@ -669,6 +679,8 @@ export const UpdateAlbumBody = zod.object({
   "slug": zod.string().optional(),
   "description": zod.string().optional(),
   "coverImage": zod.string().nullish(),
+  "date": zod.coerce.date().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "published": zod.boolean().optional()
 })
@@ -679,6 +691,7 @@ export const UpdateAlbumResponse = zod.object({
   "slug": zod.string(),
   "description": zod.string(),
   "coverImage": zod.string().nullish(),
+  "driveUrl": zod.string().url().nullish(),
   "eventId": zod.number().int().nullish(),
   "eventTitle": zod.string().nullish(),
   "city": zod.string().nullish(),

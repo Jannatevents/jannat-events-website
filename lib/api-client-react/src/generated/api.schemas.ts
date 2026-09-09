@@ -191,6 +191,8 @@ export interface Album {
   /** @nullable */
   coverImage?: string | null;
   /** @nullable */
+  driveUrl?: string | null;
+  /** @nullable */
   eventId?: number | null;
   /** @nullable */
   eventTitle?: string | null;
@@ -215,6 +217,9 @@ export interface AlbumInput {
   description: string;
   /** @nullable */
   coverImage?: string | null;
+  date: string;
+  /** @minLength 1 */
+  driveUrl: string;
   /** @nullable */
   eventId?: number | null;
   published?: boolean;
@@ -227,6 +232,10 @@ export interface AlbumUpdate {
   description?: string;
   /** @nullable */
   coverImage?: string | null;
+  /** @nullable */
+  date?: string | null;
+  /** @nullable */
+  driveUrl?: string | null;
   /** @nullable */
   eventId?: number | null;
   published?: boolean;

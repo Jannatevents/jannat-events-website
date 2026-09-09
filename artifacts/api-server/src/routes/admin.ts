@@ -75,9 +75,10 @@ async function getAlbumPayload(album: typeof albumsTable.$inferSelect) {
   return {
     ...album,
     coverImage: album.coverImage ?? null,
+    driveUrl: album.driveUrl ?? null,
     eventTitle: event?.title ?? null,
     city: event?.city ?? null,
-    date: event?.date ?? null,
+    date: album.albumDate ?? event?.date ?? null,
     media,
   };
 }
@@ -230,14 +231,17 @@ router.get("/admin/albums", async (req, res): Promise<void> => {
 router.post("/admin/albums", async (req, res): Promise<void> => {
   const parsed = CreateAlbumBody.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const { date, ...albumInput } = parsed.data;
   const [album] = await db.insert(albumsTable).values({
-    ...parsed.data,
-    slug: parsed.data.slug || `${slugify(parsed.data.title)}-${Date.now().toString().slice(-5)}`,
-    coverImage: parsed.data.coverImage ?? null,
-    eventId: parsed.data.eventId ?? null,
-    published: parsed.data.published ?? false,
+    ...albumInput,
+    slug: albumInput.slug || `${slugify(albumInput.title)}-${Date.now().toString().slice(-5)}`,
+    coverImage: albumInput.coverImage ?? null,
+    albumDate: date.toISOString().slice(0, 10),
+    driveUrl: albumInput.driveUrl,
+    eventId: albumInput.eventId ?? null,
+    published: albumInput.published ?? false,
   }).returning();
-  res.status(201).json(album);
+  res.status(201).json(await getAlbumPayload(album));
 });
 
 router.get("/admin/albums/:id", async (req, res): Promise<void> => {
@@ -253,13 +257,16 @@ router.patch("/admin/albums/:id", async (req, res): Promise<void> => {
   const parsed = UpdateAlbumBody.safeParse(req.body);
   if (!params.success) { res.status(400).json({ error: params.error.message }); return; }
   if (!parsed.success) { res.status(400).json({ error: parsed.error.message }); return; }
+  const { date, ...albumUpdate } = parsed.data;
   const [album] = await db.update(albumsTable).set({
-    ...parsed.data,
-    coverImage: parsed.data.coverImage ?? undefined,
-    eventId: parsed.data.eventId ?? undefined,
+    ...albumUpdate,
+    coverImage: albumUpdate.coverImage ?? undefined,
+    albumDate: date === undefined ? undefined : date === null ? null : date.toISOString().slice(0, 10),
+    driveUrl: albumUpdate.driveUrl ?? undefined,
+    eventId: albumUpdate.eventId ?? undefined,
   }).where(eq(albumsTable.id, params.data.id)).returning();
   if (!album) { res.status(404).json({ error: "Album not found" }); return; }
-  res.json(album);
+  res.json(await getAlbumPayload(album));
 });
 
 router.delete("/admin/albums/:id", async (req, res): Promise<void> => {

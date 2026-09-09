@@ -14,6 +14,8 @@ export interface Album {
   /** @nullable */
   coverImage?: string | null;
   /** @nullable */
+  driveUrl?: string | null;
+  /** @nullable */
   eventId?: number | null;
   /** @nullable */
   eventTitle?: string | null;

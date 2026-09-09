@@ -42,7 +42,7 @@ async function albumWithDetails(album: typeof albumsTable.$inferSelect) {
     ...album,
     eventTitle: event?.title ?? null,
     city: event?.city ?? null,
-    date: event?.date ?? null,
+    date: album.albumDate ?? event?.date ?? null,
     media,
   };
 }
