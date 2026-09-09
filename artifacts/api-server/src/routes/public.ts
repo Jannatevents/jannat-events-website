@@ -127,7 +127,7 @@ router.get("/public/site", async (_req, res): Promise<void> => {
   const [settings] = await db.select().from(siteSettingsTable).limit(1);
   res.json(GetPublicSiteResponse.parse({
     instagramUrl: settings?.instagramUrl ?? "https://www.instagram.com/jannatcanada/",
-    facebookUrl: settings?.facebookUrl ?? null,
+    facebookUrl: settings?.facebookUrl ?? "https://www.facebook.com/profile.php?id=61571229590318",
     tiktokUrl: settings?.tiktokUrl ?? null,
     contactEmail: settings?.contactEmail ?? null,
     cities: settings?.cities ?? [],
