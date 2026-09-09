@@ -22,3 +22,4 @@ export * from "./albums";
 export * from "./media";
 export * from "./contact-messages";
 export * from "./settings";
+export * from "./about";

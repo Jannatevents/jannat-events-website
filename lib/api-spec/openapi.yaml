@@ -114,6 +114,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SiteSettings"
+  /public/about:
+    get:
+      operationId: getAbout
+      tags: [public]
+      summary: Get public About page content
+      responses:
+        "200":
+          description: About page content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AboutPage"
   /contact:
     post:
       operationId: submitContact
@@ -418,6 +430,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HomePage"
+  /admin/about:
+    get:
+      operationId: getAdminAbout
+      tags: [admin]
+      summary: Get About page settings
+      responses:
+        "200":
+          description: About page settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AboutPage"
+    patch:
+      operationId: updateAbout
+      tags: [admin]
+      summary: Update About page settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AboutPageUpdate"
+      responses:
+        "200":
+          description: Updated About page settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AboutPage"
   /admin/settings:
     get:
       operationId: getSiteSettings
@@ -762,6 +803,31 @@ components:
         ctaText: { type: string }
         ctaUrl: { type: string }
         featuredEventId: { type: ["integer", "null"] }
+    AboutPage:
+      type: object
+      properties:
+        heroEyebrow: { type: string }
+        heroTitle: { type: string }
+        introEyebrow: { type: string }
+        introTitle: { type: string }
+        introParagraphs: { type: array, items: { type: string } }
+        featureImage: { type: ["string", "null"] }
+        featureEyebrow: { type: string }
+        featureTitle: { type: string }
+        featureDescription: { type: string }
+      required: [heroEyebrow, heroTitle, introEyebrow, introTitle, introParagraphs, featureEyebrow, featureTitle, featureDescription]
+    AboutPageUpdate:
+      type: object
+      properties:
+        heroEyebrow: { type: string }
+        heroTitle: { type: string }
+        introEyebrow: { type: string }
+        introTitle: { type: string }
+        introParagraphs: { type: array, items: { type: string } }
+        featureImage: { type: ["string", "null"] }
+        featureEyebrow: { type: string }
+        featureTitle: { type: string }
+        featureDescription: { type: string }
     SiteSettings:
       type: object
       properties:
