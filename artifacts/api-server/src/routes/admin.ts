@@ -51,6 +51,18 @@ function slugify(value: string) {
   return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+function compareEvents(a: typeof eventsTable.$inferSelect, b: typeof eventsTable.$inferSelect) {
+  const statusRank: Record<string, number> = { UPCOMING: 0, PAST: 1, DRAFT: 2 };
+  const rankDifference = (statusRank[a.status] ?? 2) - (statusRank[b.status] ?? 2);
+  if (rankDifference) return rankDifference;
+  const dateDifference = a.status === "PAST"
+    ? b.date.localeCompare(a.date)
+    : a.date.localeCompare(b.date);
+  return dateDifference || (a.status === "PAST"
+    ? b.startTime.localeCompare(a.startTime)
+    : a.startTime.localeCompare(b.startTime));
+}
+
 function eventPayload(event: typeof eventsTable.$inferSelect) {
   return {
     ...event,
@@ -87,7 +99,7 @@ router.use(requireAdmin);
 
 router.get("/admin/overview", async (_req, res): Promise<void> => {
   await refreshPastEvents();
-  const events = await db.select().from(eventsTable).orderBy(asc(eventsTable.date));
+  const events = (await db.select().from(eventsTable)).sort(compareEvents);
   const albums = await db.select().from(albumsTable);
   const media = await db.select().from(mediaTable);
   const messages = await db.select().from(contactMessagesTable);
@@ -115,7 +127,7 @@ router.get("/admin/events", async (req, res): Promise<void> => {
   if (parsed.data.search) {
     conditions.push(or(ilike(eventsTable.title, `%${parsed.data.search}%`), ilike(eventsTable.city, `%${parsed.data.search}%`))!);
   }
-  const events = await db.select().from(eventsTable).where(conditions.length ? and(...conditions) : undefined).orderBy(asc(eventsTable.date));
+  const events = (await db.select().from(eventsTable).where(conditions.length ? and(...conditions) : undefined)).sort(compareEvents);
   res.json(ListAdminEventsResponse.parse(events.map(eventPayload)));
 });
 
