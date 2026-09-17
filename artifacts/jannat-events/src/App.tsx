@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ClerkProvider, SignIn, Show, useClerk, useUser } from '@clerk/react';
+import { ClerkProvider, SignIn, Show, useAuth, useClerk, useUser } from '@clerk/react';
 import { publishableKeyFromHost } from '@clerk/react/internal';
 import { dark } from '@clerk/themes';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
@@ -24,6 +24,7 @@ import {
   useListAdminEvents, useListAdminMedia, useListContactMessages, useListPublicAlbums,
   useListPublicEvents, useRequestUploadUrl, useSubmitContact, useUpdateAlbum,
   useUpdateAbout, useUpdateEvent, useUpdateHomepageSettings, useUpdateMedia, useUpdateSiteSettings,
+  setAuthTokenGetter, setBaseUrl,
 } from '@workspace/api-client-react';
 import { Link, Redirect, Route, Switch, useLocation, useParams, Router as WouterRouter } from 'wouter';
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -32,6 +33,8 @@ import './index.css';
 
 const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
+const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+setBaseUrl(apiBaseUrl || null);
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 function stripBase(path: string) { return basePath && path.startsWith(basePath) ? path.slice(basePath.length) || '/' : path; }
@@ -42,7 +45,11 @@ const demoImages = [
   'https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=1100&q=85',
 ];
 
-function img(url?: string | null, i = 0) { return url || demoImages[i % demoImages.length]; }
+function apiAssetUrl(url?: string | null) {
+  if (!url) return url || '';
+  return apiBaseUrl && url.startsWith('/api/') ? `${apiBaseUrl}${url}` : url;
+}
+function img(url?: string | null, i = 0) { return apiAssetUrl(url) || demoImages[i % demoImages.length]; }
 function parseDisplayDate(date: string) {
   const dateOnly = date.slice(0, 10);
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOnly);
@@ -177,7 +184,7 @@ function Home() {
     <PublicHeader />
     <div className="fixed right-5 top-24 z-40"><CountryToggle country={country} setCountry={setCountry} /></div>
     <section className="relative flex min-h-[92svh] items-end overflow-hidden">
-      {h?.heroVideo ? <video src={h.heroVideo} autoPlay muted loop playsInline preload="auto" poster={h.heroImage || undefined} className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img(h?.heroImage, 0)})` }} />}
+      {h?.heroVideo ? <video src={apiAssetUrl(h.heroVideo)} autoPlay muted loop playsInline preload="auto" poster={apiAssetUrl(h.heroImage) || undefined} className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${img(h?.heroImage, 0)})` }} />}
       <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(0,0,0,.58),rgba(0,0,0,.22)_58%,rgba(0,0,0,.35))]" />
       <div className="relative mx-auto w-full max-w-7xl px-5 pb-16 pt-44 lg:px-10 lg:pb-28">
         <p className="mono-font reveal text-[10px] uppercase tracking-[.28em] text-[#e5ae55]">A South Asian night out · across {country === Country.CA ? 'Canada' : 'the USA'}</p>
@@ -247,7 +254,7 @@ function AlbumDetail() {
   if (q.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
   if (q.isError || !q.data) return <><PublicHeader /><ErrorState retry={() => q.refetch()} /><PublicFooter /></>;
   const album = q.data; const media = album.media || [];
-  return <div className="jannat-grain min-h-screen bg-[#24120f] text-[#f7eddf]"><PublicHeader /><section className="mx-auto max-w-7xl px-5 pb-12 pt-36 lg:px-10"><Link href="/albums" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-[#e5ae55]" data-testid="link-back-albums"><ArrowLeft size={14} /> All albums</Link><p className="mono-font mt-8 text-[10px] uppercase tracking-[.2em] text-[#e5ae55]">{album.city || 'Canada'} · {dateLabel(album.date)}</p><h1 className="display-font mt-3 text-6xl md:text-8xl">{album.title}</h1><p className="mt-5 max-w-xl text-sm leading-7 text-[#d8c5b5]">{album.description || 'Photos from a Jannat night.'}</p>{album.driveUrl && <a href={album.driveUrl} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#e5ae55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[.16em] text-[#4b231b] transition hover:bg-[#f4cd81]" data-testid="button-see-album">See photos <ExternalLink size={15} /></a>}</section><main className="mx-auto max-w-7xl columns-2 gap-3 px-5 pb-24 sm:columns-3 lg:px-10">{media.length ? media.map((m, i) => <button key={m.id} onClick={() => setLightbox(i)} className="group relative mb-3 block w-full overflow-hidden text-left" data-testid={`button-media-${m.id}`}><img src={img(m.thumbnail || m.url, i)} alt={m.altText} className="w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute right-3 top-3 rounded-full bg-[#24120f]/70 p-2 opacity-0 transition group-hover:opacity-100">{m.type === MediaType.VIDEO ? <Video size={13} /> : <ImagePlus size={13} />}</span></button>) : <div className="col-span-full"><Empty text={album.driveUrl ? 'More photos are available in the album link above.' : 'Photos are on their way.'} /></div>}</main>{lightbox !== null && <div className="fixed inset-0 z-50 grid place-items-center bg-[#170b09]/95 p-5" onClick={() => setLightbox(null)}><button onClick={() => setLightbox(null)} className="absolute right-5 top-5 rounded-full border border-white/20 p-2" data-testid="button-close-lightbox"><X /></button>{media[lightbox]?.type === MediaType.VIDEO ? <video src={media[lightbox]?.url} controls autoPlay onClick={(e) => e.stopPropagation()} className="max-h-[88vh] max-w-full" /> : <img src={img(media[lightbox]?.url, lightbox)} alt={media[lightbox]?.altText || album.title} className="max-h-[88vh] max-w-full object-contain" />}</div>}<PublicFooter /></div>;
+  return <div className="jannat-grain min-h-screen bg-[#24120f] text-[#f7eddf]"><PublicHeader /><section className="mx-auto max-w-7xl px-5 pb-12 pt-36 lg:px-10"><Link href="/albums" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-[#e5ae55]" data-testid="link-back-albums"><ArrowLeft size={14} /> All albums</Link><p className="mono-font mt-8 text-[10px] uppercase tracking-[.2em] text-[#e5ae55]">{album.city || 'Canada'} · {dateLabel(album.date)}</p><h1 className="display-font mt-3 text-6xl md:text-8xl">{album.title}</h1><p className="mt-5 max-w-xl text-sm leading-7 text-[#d8c5b5]">{album.description || 'Photos from a Jannat night.'}</p>{album.driveUrl && <a href={album.driveUrl} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-3 rounded-full bg-[#e5ae55] px-6 py-3.5 text-xs font-extrabold uppercase tracking-[.16em] text-[#4b231b] transition hover:bg-[#f4cd81]" data-testid="button-see-album">See photos <ExternalLink size={15} /></a>}</section><main className="mx-auto max-w-7xl columns-2 gap-3 px-5 pb-24 sm:columns-3 lg:px-10">{media.length ? media.map((m, i) => <button key={m.id} onClick={() => setLightbox(i)} className="group relative mb-3 block w-full overflow-hidden text-left" data-testid={`button-media-${m.id}`}><img src={img(m.thumbnail || m.url, i)} alt={m.altText} className="w-full object-cover transition duration-700 group-hover:scale-105" /><span className="absolute right-3 top-3 rounded-full bg-[#24120f]/70 p-2 opacity-0 transition group-hover:opacity-100">{m.type === MediaType.VIDEO ? <Video size={13} /> : <ImagePlus size={13} />}</span></button>) : <div className="col-span-full"><Empty text={album.driveUrl ? 'More photos are available in the album link above.' : 'Photos are on their way.'} /></div>}</main>{lightbox !== null && <div className="fixed inset-0 z-50 grid place-items-center bg-[#170b09]/95 p-5" onClick={() => setLightbox(null)}><button onClick={() => setLightbox(null)} className="absolute right-5 top-5 rounded-full border border-white/20 p-2" data-testid="button-close-lightbox"><X /></button>{media[lightbox]?.type === MediaType.VIDEO ? <video src={apiAssetUrl(media[lightbox]?.url)} controls autoPlay onClick={(e) => e.stopPropagation()} className="max-h-[88vh] max-w-full" /> : <img src={img(media[lightbox]?.url, lightbox)} alt={media[lightbox]?.altText || album.title} className="max-h-[88vh] max-w-full object-contain" />}</div>}<PublicFooter /></div>;
 }
 
 function About() {
@@ -368,7 +375,7 @@ function AdminImageUpload({ label, value, set, id }: { label: string; value: str
       setMessage(error instanceof Error ? error.message : 'Upload failed. Please try again.');
     }
   };
-  return <div className="grid gap-2 sm:col-span-2"><span className="text-xs font-bold">{label}</span><div className="overflow-hidden border border-[#d8c8b8] bg-[#f3ead7]"><div className="mx-auto aspect-[3/4] max-h-[560px] bg-[#d9c4ae]">{value ? <img src={value} alt="" style={{ objectPosition: cropPosition(value) }} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center px-6 text-center text-xs text-[#806b5f]">Upload any image ratio. It will be fitted into this 3:4 frame.</div>}</div>{value && <div className="grid gap-4 border-t border-[#d8c8b8] p-4 sm:grid-cols-2"><label className="grid gap-2 text-[11px] font-bold"><span>Move left or right</span><input type="range" min="0" max="100" value={crop.x} onChange={(e) => set(withCrop(value, Number(e.target.value), crop.y))} data-testid={`${id}-crop-x`} /></label><label className="grid gap-2 text-[11px] font-bold"><span>Move up or down</span><input type="range" min="0" max="100" value={crop.y} onChange={(e) => set(withCrop(value, crop.x, Number(e.target.value)))} data-testid={`${id}-crop-y`} /></label></div>}<div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-bold">Any image ratio accepted</p><p className="mt-1 text-[11px] text-[#806b5f]">JPG, PNG, or WebP · 10 MB maximum · Adjust the crop above</p>{message && <p className="mt-2 text-[11px] text-[#674329]">{message}</p>}</div><label className="focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#070604] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#f7e8c2]"><UploadCloud size={14} /> {upload.isPending ? 'Uploading…' : value ? 'Replace image' : 'Upload image'}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending} onChange={(e) => e.target.files?.[0] && void choose(e.target.files[0])} data-testid={id} /></label></div></div></div>;
+  return <div className="grid gap-2 sm:col-span-2"><span className="text-xs font-bold">{label}</span><div className="overflow-hidden border border-[#d8c8b8] bg-[#f3ead7]"><div className="mx-auto aspect-[3/4] max-h-[560px] bg-[#d9c4ae]">{value ? <img src={apiAssetUrl(value)} alt="" style={{ objectPosition: cropPosition(value) }} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center px-6 text-center text-xs text-[#806b5f]">Upload any image ratio. It will be fitted into this 3:4 frame.</div>}</div>{value && <div className="grid gap-4 border-t border-[#d8c8b8] p-4 sm:grid-cols-2"><label className="grid gap-2 text-[11px] font-bold"><span>Move left or right</span><input type="range" min="0" max="100" value={crop.x} onChange={(e) => set(withCrop(value, Number(e.target.value), crop.y))} data-testid={`${id}-crop-x`} /></label><label className="grid gap-2 text-[11px] font-bold"><span>Move up or down</span><input type="range" min="0" max="100" value={crop.y} onChange={(e) => set(withCrop(value, crop.x, Number(e.target.value)))} data-testid={`${id}-crop-y`} /></label></div>}<div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-bold">Any image ratio accepted</p><p className="mt-1 text-[11px] text-[#806b5f]">JPG, PNG, or WebP · 10 MB maximum · Adjust the crop above</p>{message && <p className="mt-2 text-[11px] text-[#674329]">{message}</p>}</div><label className="focus-ring inline-flex cursor-pointer items-center justify-center gap-2 rounded-full bg-[#070604] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#f7e8c2]"><UploadCloud size={14} /> {upload.isPending ? 'Uploading…' : value ? 'Replace image' : 'Upload image'}<input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={upload.isPending} onChange={(e) => e.target.files?.[0] && void choose(e.target.files[0])} data-testid={id} /></label></div></div></div>;
 }
 
 function AdminAlbums() {
@@ -478,6 +485,21 @@ function Router() {
     <Route path="/" component={Home} /><Route path="/events" component={Events} /><Route path="/events/:slug" component={EventDetail} /><Route path="/albums" component={Albums} /><Route path="/albums/:slug" component={AlbumDetail} /><Route path="/about" component={About} /><Route path="/contact" component={Contact} /><Route path="/admin/login"><Redirect to="/sign-in" /></Route><Route path="/sign-in/*?" component={AuthPage} /><Route path="/sign-up/*?"><Redirect to="/sign-in" /></Route><Route path="/admin" component={() => <ProtectedAdmin><AdminDashboard /></ProtectedAdmin>} /><Route path="/admin/events" component={() => <ProtectedAdmin><AdminEvents /></ProtectedAdmin>} /><Route path="/admin/events/new" component={() => <ProtectedAdmin><EventForm /></ProtectedAdmin>} /><Route path="/admin/events/:id/edit" component={() => { const { id } = useParams<{ id: string }>(); return <ProtectedAdmin><EventForm editId={Number(id)} /></ProtectedAdmin>; }} /><Route path="/admin/albums" component={() => <ProtectedAdmin><AdminAlbums /></ProtectedAdmin>} /><Route path="/admin/albums/new" component={() => <ProtectedAdmin><AlbumForm /></ProtectedAdmin>} /><Route path="/admin/albums/:id/edit" component={() => { const { id } = useParams<{ id: string }>(); return <ProtectedAdmin><AlbumForm editId={Number(id)} /></ProtectedAdmin>; }} /><Route path="/admin/media" component={() => <ProtectedAdmin><AdminMedia /></ProtectedAdmin>} /><Route path="/admin/homepage" component={() => <ProtectedAdmin><AdminHomepage /></ProtectedAdmin>} /><Route path="/admin/settings" component={() => <ProtectedAdmin><AdminSettings /></ProtectedAdmin>} /><Route path="/admin/messages" component={() => <ProtectedAdmin><AdminMessages /></ProtectedAdmin>} /><Route component={NotFound} />
   </Switch></ErrorBoundary>;
 }
-function ClerkApp() { const [, setLocation] = useLocation(); return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={{ theme: dark, cssLayerName: 'clerk', options: { logoPlacement: 'inside', logoImageUrl: `${window.location.origin}${basePath}/jannat-logo.png`, logoLinkUrl: basePath || '/' }, variables: { colorPrimary: '#d7a84f', colorBackground: '#070604', colorForeground: '#f7e8c2', colorMutedForeground: '#c7ad7a', colorInput: '#15110b', colorInputForeground: '#f7e8c2', colorNeutral: '#6f5426', fontFamily: 'Manrope, sans-serif', borderRadius: '2px' }, elements: { footerAction: { display: 'none' }, socialButtonsBlockButton: { display: 'none' }, dividerRow: { display: 'none' } } }} signInUrl={`${basePath}/sign-in`} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><QueryClientProvider client={queryClient}><ClerkCacheInvalidator /><Seo /><UploadProgressToast /><CropPositioner /><Router /></QueryClientProvider></ClerkProvider>; }
+function ClerkRuntime() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(apiBaseUrl ? () => getToken() : null);
+    return () => setAuthTokenGetter(null);
+  }, [getToken]);
+
+  return <QueryClientProvider client={queryClient}><ClerkCacheInvalidator /><Seo /><UploadProgressToast /><CropPositioner /><Router /></QueryClientProvider>;
+}
+
+function ClerkApp() {
+  const [, setLocation] = useLocation();
+
+  return <ClerkProvider publishableKey={clerkPubKey} proxyUrl={clerkProxyUrl} appearance={{ theme: dark, cssLayerName: 'clerk', options: { logoPlacement: 'inside', logoImageUrl: `${window.location.origin}${basePath}/jannat-logo.png`, logoLinkUrl: basePath || '/' }, variables: { colorPrimary: '#d7a84f', colorBackground: '#070604', colorForeground: '#f7e8c2', colorMutedForeground: '#c7ad7a', colorInput: '#15110b', colorInputForeground: '#f7e8c2', colorNeutral: '#6f5426', fontFamily: 'Manrope, sans-serif', borderRadius: '2px' }, elements: { footerAction: { display: 'none' }, socialButtonsBlockButton: { display: 'none' }, dividerRow: { display: 'none' } } }} signInUrl={`${basePath}/sign-in`} routerPush={(to) => setLocation(stripBase(to))} routerReplace={(to) => setLocation(stripBase(to), { replace: true })}><ClerkRuntime /></ClerkProvider>;
+}
 function App() { return <WouterRouter base={basePath}><ClerkApp /></WouterRouter>; }
 export default App;

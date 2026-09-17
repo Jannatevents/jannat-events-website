@@ -1,15 +1,15 @@
-# [Project name]
+# Jannat Events
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Jannat Events is a South Asian nightlife and events website with a public SPA
+and a Clerk-protected admin panel.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/jannat-events run build` — build the Cloudflare Pages frontend
+- `pnpm --filter @workspace/api-server run build` — build the Node API bundle
+- Required API env: `DATABASE_URL`, Clerk values, and object-storage paths
 
 ## Stack
 
@@ -18,28 +18,40 @@ _Replace the heading above with the project's name, and this line with one sente
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Build: Vite for the frontend and esbuild for the API
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/jannat-events` — public website and `/admin` SPA
+- `artifacts/api-server` — Express API
+- `lib/db` — PostgreSQL and Drizzle schema
+- `lib/api-client-react` — generated API client and cross-origin configuration
+- `README.md` — GitHub, Cloudflare Pages, API, CORS, and Clerk handoff guide
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Cloudflare Pages hosts the frontend and admin routes as one SPA.
+- The API remains a Node service because it uses Express, `pg`, Node streams,
+  and the current Replit App Storage sidecar.
+- A separately hosted frontend uses `VITE_API_BASE_URL` and Clerk bearer tokens.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Public event calendar with Canada/USA filtering and event detail pages.
+- Albums, homepage content, About content, site settings, and contact inquiries.
+- Admin-only event, album, media, homepage, About, and settings management.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Keep secrets in the host environment; never commit real `.env` files.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Cloudflare Pages build output is `artifacts/jannat-events/dist/public`.
+- `VITE_API_BASE_URL` is an origin without a trailing slash or `/api`.
+- External API hosting requires a storage migration unless the Replit App
+  Storage sidecar remains available.
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- See `README.md` for the complete deployment and GitHub handoff process.
