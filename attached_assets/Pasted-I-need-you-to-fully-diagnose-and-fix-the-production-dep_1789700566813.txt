@@ -1,0 +1,100 @@
+I need you to fully diagnose and fix the production deployment of this project. Do not just explain what I should do — inspect the project, make the necessary code/configuration changes, build it, deploy it, and verify it yourself wherever possible.
+
+PROJECT:
+Jannat Events Website
+
+CLOUDFLARE WORKER:
+jannat-events-website
+
+Production Worker URL:
+https://jannat-events-website.contactthejannat.workers.dev
+
+Custom domain:
+https://jannat.events
+
+Cloudflare API authentication is already configured in the environment as:
+CLOUDFLARE_API_TOKEN
+
+IMPORTANT:
+Never print, expose, echo, commit, or display the API token.
+
+CURRENT SITUATION:
+
+- Cloudflare API token verification has already succeeded and returned success:true / status:active.
+- `npx wrangler deploy` successfully deploys.
+- Latest deployment reported:
+"Success! Uploaded"
+"Uploaded jannat-events-website"
+"Deployed jannat-events-website triggers"
+- The Worker deployment URL is:
+https://jannat-events-website.contactthejannat.workers.dev
+- Both the workers.dev URL and jannat.events currently show "Something went wrong."
+- `npx wrangler tail` returns:
+"Cannot tail a Worker which only has assets. This may be possible in the future. [code: 100311]"
+- Therefore do NOT waste time trying to use wrangler tail on this assets-only Worker.
+- Cloudflare routes for jannat.events and www.jannat.events have already been configured.
+- DNS/nameservers have already been moved to Cloudflare.
+- The problem appears to be the deployed application/static asset configuration rather than simply DNS.
+
+YOUR JOB:
+
+1. Inspect the entire repository and determine:
+- framework/build system
+- correct production build command
+- correct output directory
+- current Wrangler configuration
+- whether this should actually be an assets-only Worker, Worker + assets, or Cloudflare Pages deployment.
+
+2. Run the production build locally in Replit.
+
+3. Inspect the generated production output carefully.
+Verify that index.html, JS bundles, CSS, images, fonts and other required assets actually exist.
+
+4. Inspect wrangler.toml / wrangler.json / wrangler.jsonc and any Cloudflare-related configuration.
+
+5. Fix any incorrect assets directory, build output path, SPA fallback configuration, routing configuration, Worker configuration, or deployment configuration.
+
+6. This is a single-page application if the source indicates that it is one. If so, make sure direct navigation and refreshes on frontend routes correctly fall back to index.html instead of producing errors.
+
+7. Make sure asset URLs work correctly when hosted at the domain root.
+
+8. Do NOT destroy or unnecessarily rewrite the website design or application functionality. Fix deployment/configuration problems only unless a code bug is actually causing production failure.
+
+9. After fixing it, rebuild.
+
+10. Deploy using:
+npx wrangler deploy
+
+11. After deployment, TEST the production Worker yourself using curl, including:
+
+curl -i https://jannat-events-website.contactthejannat.workers.dev/
+
+Also inspect the returned HTML and test referenced JS/CSS asset URLs.
+
+12. Confirm that the root request returns a successful HTTP response and actual website HTML, not a Cloudflare "Something went wrong" error.
+
+13. Test:
+https://jannat.events
+if network access allows it.
+
+14. If the Worker URL works but jannat.events does not, then inspect the Cloudflare routing/domain configuration and identify the exact remaining issue.
+
+15. Do not create another Cloudflare Worker unless absolutely necessary.
+Do not create a duplicate project.
+Do not change nameservers.
+Do not regenerate the API token.
+Do not ask me to manually copy files around if you can fix them yourself.
+
+16. Keep working through errors instead of stopping after the first failed command.
+
+17. At the end, give me a SHORT report containing only:
+- Root cause
+- Files/configuration you changed
+- Build result
+- Deployment result
+- HTTP status from workers.dev
+- HTTP status from jannat.events
+- Whether the website is fully working
+- If not working, the exact remaining blocker
+
+Start by inspecting the repository and current Wrangler configuration, then proceed with diagnosis and repair.
