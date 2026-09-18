@@ -1,0 +1,66 @@
+The Railway API is now reachable and R2 storage is working correctly, but every PostgreSQL-backed public endpoint returns HTTP 500.
+
+Working:
+- /api/healthz -> 200
+- R2 image HEAD -> 200
+- R2 MP4 HEAD -> 200
+- R2 MP4 Range -> 206
+
+Failing:
+- /api/public/home -> 500
+- /api/public/site -> 500
+- /api/public/events -> 500
+- /api/public/albums -> 500
+- /api/public/about -> 500
+
+Do NOT deploy the Cloudflare frontend yet.
+
+I need a READ-ONLY diagnosis of the Railway PostgreSQL failure.
+
+Please inspect the API database configuration and determine exactly what can cause these routes to return 500 on Railway.
+
+Specifically check:
+
+1. How DATABASE_URL is read in:
+   lib/db/src/index.ts
+
+2. Whether the Railway deployment expects:
+   DATABASE_URL
+   or another variable name.
+
+3. Whether the PostgreSQL client requires SSL when connecting externally from Railway.
+
+4. Whether the current pg / node-postgres configuration correctly handles the SSL requirements of the existing Replit PostgreSQL database.
+
+5. Whether DISABLE_STARTUP_WRITES=true affects reads. It must remain enabled.
+
+6. Inspect the route handlers for:
+   /api/public/home
+   /api/public/site
+   /api/public/events
+   /api/public/albums
+   /api/public/about
+
+7. Determine whether all failures originate from the same database connection error.
+
+8. Tell me exactly what Railway Deploy Logs should show when one of these routes is requested.
+
+Do NOT:
+- run migrations
+- run drizzle push
+- modify schema
+- seed the database
+- insert/update/delete records
+- replace DATABASE_URL
+- create another database
+- change R2
+- change Clerk
+- change Cloudflare
+- deploy the frontend
+- modify DNS
+
+If a source-code change is necessary for external PostgreSQL SSL connectivity, show me the minimal proposed change FIRST. Do not make it yet.
+
+If no source-code change is required, tell me exactly which Railway variable/configuration needs correction.
+
+I want the existing Replit PostgreSQL database and all existing data preserved.
