@@ -1,0 +1,33 @@
+I am deploying the existing Express API to Railway. The Railway deployment currently crashes with:
+
+Error: DATABASE_URL must be set. Did you forget to provision a database?
+
+I need to use the existing Replit PostgreSQL database. Do NOT create a new database, migrate anything, modify data, run Drizzle push, seed the database, or change the existing database.
+
+Please do the following:
+
+Determine whether DATABASE_URL currently exists in this Replit project's runtime environment.
+Determine where it is being supplied from — Replit Database integration, environment variable, deployment configuration, or another source.
+NEVER print, echo, display, log, or expose the actual DATABASE_URL, username, password, hostname, or credentials in your response.
+Confirm whether this is the PostgreSQL database currently used by the Jannat API.
+Confirm whether the connection string is suitable for connecting from an external Node host such as Railway.
+Check whether the connection requires SSL and whether the existing connection string already includes the necessary SSL configuration.
+Tell me the safest way in the Replit UI to privately copy the existing DATABASE_URL into Railway as a Railway environment variable named DATABASE_URL.
+If Replit does not provide a UI method to reveal/copy the existing database connection string, give me a secure alternative that transfers it without printing it into Agent chat, logs, source code, GitHub, or any committed file.
+
+Also verify that Railway should continue using:
+
+DISABLE_STARTUP_WRITES=true
+
+during initial testing so that startup seeding and automatic event-status updates remain disabled.
+
+READ-ONLY investigation only. Do not modify the database, code, Cloudflare, DNS, GitHub, Replit database configuration, or production website.
+
+At the end, tell me only:
+
+Whether DATABASE_URL exists
+Where it comes from
+Whether it is the correct existing database
+Whether external Railway connectivity should work
+SSL requirement/status
+Exact safe steps for me to transfer it to Railway without exposing the credential
