@@ -1,0 +1,67 @@
+Railway networking is now fixed.
+
+After explicitly binding Express to 0.0.0.0, this request:
+
+curl -i https://jannat-events-website-production.up.railway.app/api/healthz
+
+changed from Railway HTTP 502 to:
+
+HTTP/2 500
+x-powered-by: Express
+Internal Server Error
+
+This proves Railway now reaches the Express application.
+
+Diagnose the 500 occurring before or during /api/healthz.
+
+IMPORTANT:
+
+DISABLE_STARTUP_WRITES=true
+Do not write to or migrate the database.
+Do not run Drizzle push.
+Do not modify Cloudflare/DNS/frontend.
+Do not expose secrets.
+Do not change storage yet.
+
+Inspect the complete middleware chain that executes before GET /api/healthz, particularly:
+
+Clerk middleware
+/api/__clerk proxy middleware
+CORS
+logging/Pino middleware
+environment-variable validation
+error middleware
+any middleware that expects Replit-specific environment/configuration
+
+Determine exactly which middleware can throw a 500 on Railway even though /api/healthz itself performs no database or storage operation.
+
+Also inspect whether any required Railway environment variables are missing. Report variable NAMES only, never values.
+
+Make /api/healthz a reliable infrastructure health endpoint that does NOT require:
+
+Clerk authentication
+Clerk proxying
+PostgreSQL
+Replit App Storage
+
+If middleware ordering currently prevents that, make the smallest safe change necessary so /api/healthz is registered before middleware that depends on those external services.
+
+Add safe server-side error logging if necessary so unexpected middleware errors identify their component/type without printing secrets, authorization headers, cookies, DATABASE_URL, Clerk keys, or tokens.
+
+Then:
+
+Run typecheck.
+Run the production API build.
+Test /api/healthz locally with production-style environment configuration.
+Confirm it returns HTTP 200 and {"status":"ok"}.
+Commit the minimal fix locally.
+
+Do NOT attempt GitHub authentication or ask me to connect GitHub. The Replit Agent cannot push from this workspace. I will push the existing local commit myself from Replit Shell.
+
+At the end report:
+
+exact root cause
+files changed
+local health-test result
+commit hash
+any Railway variable NAMES that are still required
