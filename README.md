@@ -88,9 +88,10 @@ VITE_CLERK_PROXY_URL=https://api.example.com/api/__clerk
 `https://api.example.com/api`.
 
 After the first deployment, attach `jannat.events` and
-`www.jannat.events` as custom domains in Pages. The committed
-`public/_redirects` file keeps direct visits and refreshes to routes such as
-`/admin/events` and `/events/example-slug` inside the SPA.
+`www.jannat.events` as custom domains in Pages. Pages' SPA behavior and the
+Wrangler `not_found_handling = "single-page-application"` setting keep direct
+visits and refreshes to routes such as `/admin/events` and
+`/events/example-slug` inside the SPA without a `_redirects` rule.
 
 ## Cloudflare Worker static-assets setup
 
