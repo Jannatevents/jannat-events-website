@@ -1,0 +1,1 @@
+- [Static Worker API boundary](static-worker-api-boundary.md) — assets-only Workers need a separate API origin; otherwise SPA fallback HTML can reach JSON consumers.
