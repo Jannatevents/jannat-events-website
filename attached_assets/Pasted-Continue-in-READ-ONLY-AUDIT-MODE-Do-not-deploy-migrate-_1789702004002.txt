@@ -1,0 +1,91 @@
+Continue in READ-ONLY AUDIT MODE.
+
+Do not deploy, migrate, modify, delete, rebuild, change DNS, change Cloudflare, change the frontend, or write to the database.
+
+We are considering keeping the current Cloudflare frontend and deploying the existing Express/Node API to a separate Node-compatible production host.
+
+Before choosing a host, I need you to determine exactly how portable the current backend is.
+
+Please investigate and report:
+
+1. EXISTING POSTGRESQL
+Determine whether the current PostgreSQL database behind DATABASE_URL can accept connections from an external production host outside Replit.
+
+Do NOT reveal DATABASE_URL or any credentials.
+
+Tell me:
+- Is it Replit-managed PostgreSQL?
+- Is external network access supported?
+- Would the database remain available if this Replit app itself is not published?
+- Is its persistence tied to this Replit workspace/account?
+- Would an external Node server using the same DATABASE_URL reasonably be able to connect?
+- Are SSL settings required?
+- Are there connection limits or other restrictions we should know about?
+
+If you cannot conclusively determine something, explicitly say UNKNOWN rather than guessing.
+
+2. DATABASE CONTENT
+Read the Drizzle schema and report:
+- all tables
+- relationships
+- migrations
+- seed behavior
+- whether startup code can accidentally overwrite/reset existing data
+
+Do not perform any database writes.
+
+3. REPLIT APP STORAGE
+Inventory how storage is used.
+
+Report:
+- what types of files are stored
+- how database rows reference those files
+- whether existing objects can be enumerated/exported
+- whether an R2 migration can preserve the same object paths
+- what code would need to change to replace Replit App Storage with Cloudflare R2
+
+Do NOT copy or delete anything yet.
+
+4. API PORTABILITY
+Determine whether the existing Express API can run on a standard Node host with minimal changes.
+
+Specifically identify any remaining Replit-only dependencies besides App Storage.
+
+5. HOSTING REQUIREMENTS
+Based on package.json and the server code, report:
+- build command
+- production start command
+- required Node version
+- required environment variables (NAMES ONLY — never values)
+- expected PORT behavior
+- memory/storage requirements if identifiable
+- whether WebSockets are required
+- whether persistent local disk is required
+- whether background processes/cron are required
+
+6. CLERK
+Confirm whether the same Clerk tenant can be used from a different API domain and list any Clerk dashboard settings/allowed origins/redirect URLs that would need updating.
+
+7. CORS
+List the exact production origins that the backend needs to allow for:
+https://jannat.events
+https://www.jannat.events
+
+Do not change CORS yet.
+
+8. RECOMMENDATION
+Based ONLY on technical compatibility, identify 2-3 Node-compatible hosting approaches suitable for this exact API.
+
+Do not migrate anything.
+
+For each option tell me:
+- whether the existing Express app can run with minimal changes
+- PostgreSQL compatibility
+- Clerk compatibility
+- R2 compatibility
+- background process compatibility
+- major limitation
+
+Finally tell me which parts of the migration can be performed with ZERO changes to existing production data and which steps carry data-loss risk.
+
+Again: READ ONLY. Make no changes.
