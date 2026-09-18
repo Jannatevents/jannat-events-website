@@ -17,7 +17,11 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-await ensureSeeded();
+const disableStartupWrites = process.env["DISABLE_STARTUP_WRITES"] === "true";
+
+if (!disableStartupWrites) {
+  await ensureSeeded();
+}
 
 app.listen(port, (err) => {
   if (err) {
@@ -26,6 +30,11 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+  if (disableStartupWrites) {
+    logger.info("Startup database writes and event refresh are disabled");
+    return;
+  }
+
   const refresh = () => {
     void refreshPastEvents().catch((error) => logger.error({ error }, "Could not refresh event statuses"));
   };

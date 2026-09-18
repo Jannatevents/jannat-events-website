@@ -1,0 +1,157 @@
+We have completed the read-only portability audit.
+
+Proceed with PREPARATION ONLY for moving the API to a standard
+Node-compatible host such as Railway.
+
+IMPORTANT SAFETY RULES:
+
+- Do NOT modify the existing production PostgreSQL data.
+- Do NOT run drizzle push or push-force.
+- Do NOT migrate the database.
+- Do NOT modify Cloudflare.
+- Do NOT modify DNS.
+- Do NOT change jannat.events.
+- Do NOT redeploy the existing Cloudflare frontend.
+- Do NOT delete or modify existing Replit App Storage objects.
+- Do NOT replace the Clerk tenant.
+- Do NOT expose or print any secret values.
+
+The objective is to make the existing Express API portable to Railway
+while preserving the existing database and Clerk configuration.
+
+PHASE 1 — MAKE STARTUP SAFE
+
+The audit found that API startup currently calls ensureSeeded() and
+refreshPastEvents(), and refreshPastEvents runs every 60 seconds.
+
+Add a production-safe environment switch:
+
+DISABLE_STARTUP_WRITES=true
+
+When this variable is true:
+
+- Do not run ensureSeeded()
+- Do not run refreshPastEvents() during startup
+- Do not start the 60-second refresh interval
+
+Normal API routes should continue functioning.
+
+Do not change existing behavior when the variable is absent or false.
+
+PHASE 2 — HEALTH ENDPOINT
+
+Ensure the API has:
+
+GET /api/healthz
+
+It should return a simple successful JSON response without modifying
+the database.
+
+Preferably report basic server health without exposing secrets.
+
+PHASE 3 — EXTERNAL NODE HOST COMPATIBILITY
+
+Verify that the API:
+
+- binds using process.env.PORT
+- does not bind only to localhost
+- can run using the existing production build command
+- can start using the existing production start command
+- requires no Replit-specific runtime except the existing storage system
+
+Do not deploy it.
+
+PHASE 4 — STORAGE ISOLATION
+
+Do NOT migrate storage yet.
+
+Identify exactly which API routes will fail outside Replit because
+127.0.0.1:1106 will not exist.
+
+Make sure failure of the storage integration does NOT prevent the
+entire API server from starting.
+
+Public event APIs, Clerk authentication, admin non-storage APIs,
+settings APIs and /api/healthz should be able to operate even if
+Replit App Storage is unavailable.
+
+Do not replace storage with R2 yet.
+
+PHASE 5 — DATABASE CONNECTION
+
+Keep DATABASE_URL as an environment variable.
+
+Do not inspect, print, replace or migrate its value.
+
+Make the database connection compatible with an externally hosted
+Node service using PostgreSQL SSL.
+
+Do not disable SSL certificate verification globally.
+
+If the existing connection string already controls SSL through its
+parameters, preserve that behavior.
+
+PHASE 6 — CORS
+
+Prepare production CORS support for exactly:
+
+https://jannat.events
+https://www.jannat.events
+
+using:
+
+CORS_ORIGINS=https://jannat.events,https://www.jannat.events
+
+Do not change the live frontend.
+
+PHASE 7 — CLERK
+
+Preserve the existing Clerk implementation and tenant.
+
+Keep:
+
+CLERK_PUBLISHABLE_KEY
+CLERK_SECRET_KEY
+
+as environment variables.
+
+Do not expose their values.
+
+Keep the /api/__clerk proxy operational on a standard Node host.
+
+PHASE 8 — RAILWAY DEPLOYMENT DOCUMENTATION
+
+Do NOT deploy to Railway yourself.
+
+Create a concise deployment checklist telling me:
+
+1. What repository/project directory Railway should use
+2. Install command
+3. Build command
+4. Start command
+5. Node version
+6. Every environment variable NAME Railway will require
+7. Which secrets must be copied manually
+8. What temporary value DISABLE_STARTUP_WRITES should have
+9. How to test /api/healthz before connecting jannat.events
+10. How to test PostgreSQL connectivity safely
+11. How to test Clerk admin authentication
+12. Which storage features will remain unavailable until R2 migration
+
+After making ONLY the safe code changes described above:
+
+- run typecheck
+- run build
+- report every file changed
+- explain every change
+- report whether the API is ready for an external Node host
+
+STOP THERE.
+
+Do not publish.
+Do not deploy.
+Do not change Cloudflare.
+Do not change DNS.
+Do not connect the production frontend.
+Do not migrate storage.
+Do not migrate the database.

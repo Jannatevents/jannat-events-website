@@ -141,6 +141,88 @@ curl -i https://api.example.com/api/healthz
 
 The response should be successful before connecting the Pages frontend.
 
+### Railway preparation checklist
+
+This checklist prepares the existing API for Railway without changing the
+database, Cloudflare, DNS, Clerk tenant, frontend, or Replit App Storage.
+
+1. **Project directory:** use the repository root (`/`), because the API
+   imports the workspace packages `@workspace/db` and `@workspace/api-zod`.
+2. **Install command:**
+
+   ```bash
+   pnpm install --frozen-lockfile
+   ```
+
+3. **Build command:**
+
+   ```bash
+   pnpm --filter @workspace/api-server run build
+   ```
+
+4. **Start command:**
+
+   ```bash
+   pnpm --filter @workspace/api-server run start
+   ```
+
+5. **Node version:** Node.js 24. Railway must provide the `PORT` value.
+6. **Required environment variable names:**
+
+   ```text
+   NODE_ENV
+   PORT
+   DISABLE_STARTUP_WRITES
+   DATABASE_URL
+   CLERK_PUBLISHABLE_KEY
+   CLERK_SECRET_KEY
+   CORS_ORIGINS
+   PUBLIC_OBJECT_SEARCH_PATHS
+   PRIVATE_OBJECT_DIR
+   LOG_LEVEL
+   ```
+
+7. **Copy manually as secrets:** `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`,
+   `CLERK_SECRET_KEY`, `PUBLIC_OBJECT_SEARCH_PATHS`, and
+   `PRIVATE_OBJECT_DIR`. Keep the database URL's PostgreSQL SSL parameters
+   unchanged; do not print or commit any of these values.
+8. **Temporary startup setting:** use
+   `DISABLE_STARTUP_WRITES=true` while validating an external host. This
+   prevents startup seeding, the initial event-status refresh, and the
+   60-second refresh interval. Set it to `false` only after the host and
+   database behavior have been deliberately reviewed.
+9. **Health test before connecting the frontend:**
+
+   ```bash
+   curl -i https://<railway-api-domain>/api/healthz
+   ```
+
+   Expect a successful JSON response. This endpoint does not query or modify
+   PostgreSQL.
+10. **Safe PostgreSQL test:** first use a non-production database or a
+    read-only database credential. With `DISABLE_STARTUP_WRITES=true`, test a
+    read-only public endpoint such as:
+
+    ```bash
+    curl -i https://<railway-api-domain>/api/public/site
+    ```
+
+    The API still needs a successful PostgreSQL connection for this request,
+    but no schema push, seed, or scheduled status write is run at startup.
+    Do not use admin or contact-write routes for connectivity testing.
+11. **Clerk admin test:** keep the same Clerk tenant and keys, sign in from a
+    controlled frontend or API test page, then verify one protected read-only
+    route such as `GET /api/admin/overview`. Confirm that the request carries
+    the Clerk bearer token and that the configured admin user receives a
+    successful response. Do not test create, update, delete, upload, or
+    contact-submission routes.
+12. **Unavailable storage features until an adapter migration:** upload URL
+    creation, public object serving, private object serving, byte-range media
+    serving, and any existing media whose URLs depend on Replit App Storage.
+    These routes depend on the Replit sidecar at `127.0.0.1:1106`. Public
+    event APIs, settings APIs, Clerk authentication, non-storage admin reads,
+    and `/api/healthz` do not require the sidecar to start.
+
 ## Production CORS and Clerk
 
 Set `CORS_ORIGINS` on the API to the exact browser origins, comma-separated:
