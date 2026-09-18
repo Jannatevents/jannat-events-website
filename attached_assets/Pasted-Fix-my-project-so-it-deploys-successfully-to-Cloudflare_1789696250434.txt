@@ -1,0 +1,35 @@
+Fix my project so it deploys successfully to Cloudflare Workers.
+
+Current situation:
+
+The project works in Replit.
+GitHub repository is Jannatevents/jannat-events-website.
+Production branch is main.
+GitHub remote origin is already configured correctly.
+Cloudflare is already connected to this GitHub repository.
+Cloudflare build command is pnpm run build.
+Cloudflare deploy command is npx wrangler deploy.
+Cloudflare currently fails during dependency installation with:
+ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
+Cannot proceed with the frozen installation. The current "overrides" configuration doesn't match the value found in the lockfile.
+Replit is using pnpm 10.26.1.
+package.json currently does not have a packageManager value.
+Fix this completely. Do not delete or recreate the project, Git repository, or application code.
+
+Inspect package.json, pnpm-lock.yaml, pnpm-workspace.yaml, and any pnpm configuration files.
+Set "packageManager": "pnpm@10.26.1" in the correct package.json.
+Make sure the pnpm overrides/configuration in the lockfile exactly matches the current project configuration.
+Regenerate pnpm-lock.yaml correctly if necessary using pnpm 10.26.1.
+Run a clean/frozen installation equivalent to Cloudflare’s install process and confirm it succeeds.
+Run pnpm run build and fix any build errors you encounter.
+Do not remove application functionality just to make the build pass.
+Do not create or modify GitHub Actions workflow files under .github/workflows/.
+When everything builds successfully, commit all required fixes to the existing main branch with a descriptive commit message.
+Push the commit to the existing origin main.
+Before finishing, verify:
+
+pnpm install --frozen-lockfile succeeds.
+pnpm run build succeeds.
+git status is clean after the commit.
+the fix has been pushed to origin/main.
+Do not ask me to manually run individual commands unless authentication or permissions make an action impossible. Make the necessary code/configuration changes yourself and report exactly what you changed and the final results.
