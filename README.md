@@ -212,7 +212,7 @@ database, Cloudflare, DNS, Clerk tenant, frontend, or Replit App Storage.
     Do not use admin or contact-write routes for connectivity testing.
 11. **Clerk admin test:** keep the same Clerk tenant and keys, sign in from a
     controlled frontend or API test page, then verify one protected read-only
-    route such as `GET /api/admin/overview`. Confirm that the request carries
+    route such as `GET /api/admin/settings`. Confirm that the request carries
     the Clerk bearer token and that the configured admin user receives a
     successful response. Do not test create, update, delete, upload, or
     contact-submission routes.
