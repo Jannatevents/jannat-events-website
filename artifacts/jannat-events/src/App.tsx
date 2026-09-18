@@ -34,6 +34,7 @@ import './index.css';
 const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
+const apiEnabled = Boolean(apiBaseUrl);
 setBaseUrl(apiBaseUrl || null);
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -171,10 +172,10 @@ function CountryToggle({ country, setCountry }: { country: Country; setCountry: 
 
 function Home() {
   const [country, setCountry] = useState<Country>(Country.CA);
-  const home = useGetHome();
-  const events = useListPublicEvents({ status: EventStatus.UPCOMING, country });
-  const albums = useListPublicAlbums();
-  const site = useGetPublicSite();
+  const home = useGetHome({ query: { enabled: apiEnabled, queryKey: getGetHomeQueryKey() } });
+  const events = useListPublicEvents({ status: EventStatus.UPCOMING, country }, { query: { enabled: apiEnabled, queryKey: getListPublicEventsQueryKey({ status: EventStatus.UPCOMING, country }) } });
+  const albums = useListPublicAlbums({ query: { enabled: apiEnabled, queryKey: getListPublicAlbumsQueryKey() } });
+  const site = useGetPublicSite({ query: { enabled: apiEnabled, queryKey: getGetPublicSiteQueryKey() } });
   if (home.isLoading || events.isLoading || albums.isLoading || site.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
   if (home.isError) return <><PublicHeader /><ErrorState retry={() => home.refetch()} /><PublicFooter /></>;
   const h = home.data;
@@ -210,8 +211,8 @@ function EventCard({ event, index = 0 }: { event: any; index?: number }) {
 function Events() {
   const [country, setCountry] = useState<Country>(Country.CA);
   const [city, setCity] = useState('All cities');
-  const events = useListPublicEvents({ status: EventStatus.UPCOMING, country });
-  const past = useListPublicEvents({ status: EventStatus.PAST, country });
+  const events = useListPublicEvents({ status: EventStatus.UPCOMING, country }, { query: { enabled: apiEnabled, queryKey: getListPublicEventsQueryKey({ status: EventStatus.UPCOMING, country }) } });
+  const past = useListPublicEvents({ status: EventStatus.PAST, country }, { query: { enabled: apiEnabled, queryKey: getListPublicEventsQueryKey({ status: EventStatus.PAST, country }) } });
   const list = (events.data || []).filter((e) => city === 'All cities' || e.city === city);
   const cities = [...new Set((events.data || []).map((e) => e.city))];
   const switchCountry = (next: Country) => { setCountry(next); setCity('All cities'); };
@@ -229,7 +230,7 @@ function Events() {
 
 function EventDetail() {
   const { slug = '' } = useParams<{ slug: string }>();
-  const q = useGetPublicEvent(slug);
+  const q = useGetPublicEvent(slug, { query: { enabled: apiEnabled, queryKey: getGetPublicEventQueryKey(slug) } });
   if (q.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
   if (q.isError || !q.data) return <><PublicHeader /><ErrorState retry={() => q.refetch()} /><PublicFooter /></>;
   const event = q.data;
@@ -238,7 +239,7 @@ function EventDetail() {
 }
 
 function Albums() {
-  const q = useListPublicAlbums();
+  const q = useListPublicAlbums({ query: { enabled: apiEnabled, queryKey: getListPublicAlbumsQueryKey() } });
   return <div className="jannat-grain min-h-screen bg-[#f3e9dc] text-[#4b231b]"><PublicHeader /><section className="bg-[#351a16] px-5 pb-16 pt-36 text-[#f7eddf] lg:px-10"><div className="mx-auto max-w-7xl"><p className="mono-font text-[10px] uppercase tracking-[.25em] text-[#e5ae55]">The archive</p><h1 className="display-font mt-5 max-w-4xl text-6xl leading-[.9] md:text-8xl">Good nights<br /><i>leave evidence.</i></h1><p className="mt-7 max-w-lg text-sm leading-7 text-[#d8c5b5]">Photos from the nights we have shared, collected in one place.</p></div></section><main className="mx-auto max-w-7xl px-5 py-14 lg:px-10 lg:py-20">{q.isLoading ? <Loading /> : q.isError ? <ErrorState retry={() => q.refetch()} /> : q.data?.length ? <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">{q.data.map((a, i) => <AlbumCard album={a} index={i + 1} key={a.id} />)}</div> : <Empty text="The first chapter is coming." />}</main><PublicFooter /></div>;
 }
 
@@ -249,7 +250,7 @@ function AlbumCard({ album, index = 0 }: { album: any; index?: number }) {
 
 function AlbumDetail() {
   const { slug = '' } = useParams<{ slug: string }>();
-  const q = useGetPublicAlbum(slug);
+  const q = useGetPublicAlbum(slug, { query: { enabled: apiEnabled, queryKey: getGetPublicAlbumQueryKey(slug) } });
   const [lightbox, setLightbox] = useState<number | null>(null);
   if (q.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
   if (q.isError || !q.data) return <><PublicHeader /><ErrorState retry={() => q.refetch()} /><PublicFooter /></>;
@@ -258,7 +259,7 @@ function AlbumDetail() {
 }
 
 function About() {
-  const q = useGetAbout();
+  const q = useGetAbout({ query: { enabled: apiEnabled, queryKey: getGetAboutQueryKey() } });
   if (q.isLoading) return <><PublicHeader /><Loading /><PublicFooter /></>;
   if (q.isError || !q.data) return <><PublicHeader /><ErrorState retry={() => q.refetch()} /><PublicFooter /></>;
   const about = q.data;
