@@ -8,6 +8,7 @@ import {
   clerkProxyMiddleware,
   getClerkProxyHost,
 } from "./middlewares/clerkProxyMiddleware";
+import healthRouter from "./routes/health";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -32,6 +33,7 @@ app.use(
     },
   }),
 );
+app.use("/api", healthRouter);
 app.use(CLERK_PROXY_PATH, clerkProxyMiddleware());
 const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
