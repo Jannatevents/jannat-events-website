@@ -9,7 +9,7 @@ homepage content, media, site settings, and contact inquiries.
 This repository is a pnpm monorepo with two deployable pieces:
 
 ```text
-Cloudflare Pages             Node-compatible API host
+Cloudflare Pages or Worker   Node-compatible API host
 artifacts/jannat-events      artifacts/api-server
 public website + /admin      Express + PostgreSQL + uploads
 ```
@@ -21,6 +21,11 @@ The current API is **not** a Cloudflare Worker. It uses Express, Node streams,
 `pg`, and the Replit App Storage sidecar. Do not deploy
 `artifacts/api-server` as a Worker without first replacing the storage adapter
 with a Workers-compatible database and R2 implementation.
+
+The repository now includes `wrangler.toml`. Its `npx wrangler deploy`
+configuration publishes only `artifacts/jannat-events/dist/public` as static
+Worker assets and uses SPA fallback for admin and event routes. It does not
+attempt to run the Express API inside the Worker.
 
 The lowest-risk path with the current code is:
 
@@ -86,6 +91,22 @@ After the first deployment, attach `jannat.events` and
 `www.jannat.events` as custom domains in Pages. The committed
 `public/_redirects` file keeps direct visits and refreshes to routes such as
 `/admin/events` and `/events/example-slug` inside the SPA.
+
+## Cloudflare Worker static-assets setup
+
+If the connected Cloudflare project is configured to run the commands from the
+attached deployment setup, use:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm run build
+npx wrangler deploy
+```
+
+`wrangler.toml` makes this a static frontend deployment. Set the same
+`VITE_API_BASE_URL`, `VITE_CLERK_PUBLISHABLE_KEY`, and
+`VITE_CLERK_PROXY_URL` build variables before `pnpm run build`. The API still
+needs to run separately on a Node-compatible host.
 
 ## API host setup
 

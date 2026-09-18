@@ -1,0 +1,6 @@
+name = "jannat-events-website"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./artifacts/jannat-events/dist/public"
+not_found_handling = "single-page-application"
