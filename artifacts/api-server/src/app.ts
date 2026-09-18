@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
@@ -60,5 +60,33 @@ app.use(
 );
 
 app.use("/api", router);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function redactDiagnosticText(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  return value
+    .replace(/[a-z][a-z\d+.-]*:\/\/[^\s"'<>]+/gi, "[REDACTED_URL]")
+    .replace(/\b(?:password|passwd|pwd|user|username|host|port|dbname|database|connectionString)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1=[REDACTED]")
+    .replace(/\b(?:user|username|role)\s+(?:"[^"]*"|'[^']*'|[A-Za-z0-9_.@-]+)/gi, "$1 [REDACTED]");
+}
+
+app.use((error: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  if (isRecord(error) && isRecord(error.cause) && (error.name === "DrizzleQueryError" || typeof error.query === "string")) {
+    const cause = error.cause;
+    logger.error({
+      databaseCause: {
+        message: redactDiagnosticText(cause.message),
+        code: redactDiagnosticText(cause.code),
+        detail: redactDiagnosticText(cause.detail),
+        hint: redactDiagnosticText(cause.hint),
+        routine: redactDiagnosticText(cause.routine),
+      },
+    }, "Database query failed");
+  }
+  next(error);
+});
 
 export default app;
