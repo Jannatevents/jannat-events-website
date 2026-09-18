@@ -34,7 +34,7 @@ import './index.css';
 const queryClient = new QueryClient();
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
 const apiBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim().replace(/\/+$/, '');
-const apiEnabled = Boolean(apiBaseUrl);
+const apiEnabled = Boolean(apiBaseUrl) || import.meta.env.DEV;
 setBaseUrl(apiBaseUrl || null);
 const clerkPubKey = publishableKeyFromHost(window.location.hostname, import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
@@ -289,6 +289,9 @@ function AdminShell({ children }: { children: React.ReactNode }) {
   return <div className="admin-shell min-h-[100dvh] text-[#34241f]"><aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#2b1916] px-5 py-7 text-[#f4e7d8] transition-transform md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}><div className="flex items-center justify-between"><Logo light /><button onClick={() => setOpen(false)} className="md:hidden" data-testid="button-close-sidebar"><X size={18} /></button></div><p className="mono-font mb-3 mt-12 text-[9px] uppercase tracking-[.24em] text-[#a88b7b]">Manage the night</p><nav className="grid gap-1">{adminLinks.map(([label, href, Icon]) => <Link key={href} href={href} onClick={() => setOpen(false)} className={`flex items-center gap-3 rounded-sm px-3 py-3 text-sm transition ${location === href ? 'bg-[#d69b45] font-bold text-[#34241f]' : 'text-[#dac7bb] hover:bg-white/5'}`} data-testid={`admin-nav-${label.toLowerCase().replace(' ', '-')}`}><Icon size={16} />{label}</Link>)}</nav><div className="absolute bottom-7 left-5 right-5 border-t border-white/10 pt-5"><Link href="/" className="flex items-center gap-2 text-xs text-[#a88b7b]" data-testid="link-view-site"><ExternalLink size={14} /> View live site</Link></div></aside>{open && <button className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={() => setOpen(false)} aria-label="Close navigation" data-testid="button-overlay" />}<div className="md:pl-64"><header className="flex h-20 items-center justify-between border-b border-[#d8c8b8] bg-[#f6f0e7] px-5 lg:px-10"><button onClick={() => setOpen(true)} className="md:hidden" data-testid="button-open-sidebar"><Menu /></button><div className="hidden text-xs text-[#8a7163] md:block">Jannat workspace <span className="mx-2">/</span> {adminLinks.find((l) => l[1] === location)?.[0] || 'Workspace'}</div><div className="ml-auto flex items-center gap-4"><span className="hidden text-xs text-[#8a7163] sm:inline">Toronto · 09:42</span><div className="grid h-9 w-9 place-items-center rounded-full bg-[#d69b45] text-xs font-bold">JE</div></div></header><main className="px-5 py-8 lg:px-10 lg:py-10">{children}</main></div></div>;
 }
 function AdminHeading({ eyebrow, title, action }: { eyebrow: string; title: string; action?: React.ReactNode }) { return <div className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><p className="mono-font text-[10px] uppercase tracking-[.2em] text-[#a45c3c]">{eyebrow}</p><h1 className="display-font mt-2 text-5xl leading-none text-[#34241f]">{title}</h1></div>{action}</div>; }
+function AdminUnavailable() {
+  return <div className="grid min-h-screen place-items-center bg-[#070604] px-5 text-center text-[#f7e8c2]"><div className="max-w-lg"><Logo light /><h1 className="display-font mt-8 text-5xl">Admin is offline.</h1><p className="mt-4 text-sm leading-7 text-[#c7ad7a]">This deployment is serving the public website, but its content API is not connected yet. The admin panel will be available after the API is published and linked to this site.</p><Link href="/" className="mt-8 inline-flex rounded-full bg-[#d7a84f] px-6 py-3 text-xs font-bold uppercase tracking-wider text-black">Return to website</Link></div></div>;
+}
 function AdminDashboard() {
   const q = useGetAdminOverview();
   const o = q.data;
@@ -471,6 +474,7 @@ function ProtectedAdmin({ children }: { children: React.ReactNode }) {
   if (!isSignedIn) return <Redirect to="/sign-in" />;
   const isAdmin = user.emailAddresses.some(({ emailAddress }) => emailAddress.toLowerCase() === 'contactthejannat@gmail.com');
   if (!isAdmin) return <div className="grid min-h-screen place-items-center bg-[#070604] px-5 text-center text-[#f7e8c2]"><div><Logo light /><h1 className="display-font mt-8 text-5xl">Access restricted.</h1><p className="mt-4 text-sm text-[#c7ad7a]">This account does not have permission to manage Jannat Events.</p><Link href="/" className="mt-8 inline-flex rounded-full bg-[#d7a84f] px-6 py-3 text-xs font-bold uppercase tracking-wider text-black">Return to website</Link></div></div>;
+  if (!apiEnabled) return <AdminUnavailable />;
   return <>{children}<AdminLogoutButton /></>;
 }
 function AdminLogoutButton() {
