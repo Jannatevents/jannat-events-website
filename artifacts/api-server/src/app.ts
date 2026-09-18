@@ -70,22 +70,47 @@ function redactDiagnosticText(value: unknown): string | undefined {
   return value
     .replace(/[a-z][a-z\d+.-]*:\/\/[^\s"'<>]+/gi, "[REDACTED_URL]")
     .replace(/\b(?:password|passwd|pwd|user|username|host|port|dbname|database|connectionString)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1=[REDACTED]")
+    .replace(/\b(?:password|passwd|pwd)\s+(?:"[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1 [REDACTED]")
     .replace(/\b(?:user|username|role)\s+(?:"[^"]*"|'[^']*'|[A-Za-z0-9_.@-]+)/gi, "$1 [REDACTED]");
 }
 
-app.use((error: unknown, _req: Request, _res: Response, next: NextFunction) => {
-  if (isRecord(error) && isRecord(error.cause) && (error.name === "DrizzleQueryError" || typeof error.query === "string")) {
-    const cause = error.cause;
-    logger.error({
-      databaseCause: {
-        message: redactDiagnosticText(cause.message),
-        code: redactDiagnosticText(cause.code),
-        detail: redactDiagnosticText(cause.detail),
-        hint: redactDiagnosticText(cause.hint),
-        routine: redactDiagnosticText(cause.routine),
-      },
-    }, "Database query failed");
+type SafeDatabaseCause = Partial<Record<"name" | "code" | "message" | "detail" | "hint" | "routine", string>>;
+
+function getSafeDatabaseCauseChain(error: unknown): SafeDatabaseCause[] {
+  const causes: SafeDatabaseCause[] = [];
+  const visited = new Set<unknown>();
+  let current = isRecord(error) ? error.cause : undefined;
+
+  while (isRecord(current) && !visited.has(current)) {
+    visited.add(current);
+    const safeCause: SafeDatabaseCause = {};
+
+    for (const field of ["name", "code", "message", "detail", "hint", "routine"] as const) {
+      const value = redactDiagnosticText(current[field]);
+      if (value !== undefined) safeCause[field] = value;
+    }
+
+    if (Object.keys(safeCause).length > 0) causes.push(safeCause);
+    current = current.cause;
   }
+
+  return causes;
+}
+
+app.use((error: unknown, _req: Request, _res: Response, next: NextFunction) => {
+  const isDatabaseQueryError = isRecord(error)
+    && (typeof error.query === "string" || /^failed query:/i.test(redactDiagnosticText(error.message) ?? ""))
+    && isRecord(error.cause);
+  const databaseCauses = isDatabaseQueryError ? getSafeDatabaseCauseChain(error) : [];
+
+  if (databaseCauses.length > 0) {
+    logger.error({ databaseCauses }, "Database query failed");
+    if (!_res.headersSent) {
+      _res.sendStatus(500);
+      return;
+    }
+  }
+
   next(error);
 });
 
